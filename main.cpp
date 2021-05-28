@@ -1,166 +1,273 @@
 #include <iostream>
 #include <vector>
 
-class Card{
+using namespace std;
+class Card {
 protected:
-    std::string name;
-    std::string type;
-    virtual void Play(){
-
-    }
-    Card(std::string n, std::string t):name(n),type(t){} ;
-};
-class landCard: public Card{
-protected:
-    std::string mana;
+    string name;
+    string type;
+    bool isTapped;
 public:
-    landCard(std::string n, std::string t, std::string m):Card(n, t), mana(m){
+    Card(string name, string type )
+    {
+        this->name = name;
+        this->type = type;
+    }
+
+    virtual void Play() {
 
     }
+    virtual void Tap()
+    {
+        isTapped = true;
+    }
+
+    virtual void printInfo()
+    {
+        cout << name << " " << type;
+    }
+
+
 };
-class creatureCard: public Card{
+
+class LandCard : public Card {
+protected:
+   string mana;
+   bool isTapped;
+   //Player playerM;
+public:
+    LandCard(string name, string type, string mana) :Card(name, type)
+    {
+        this->mana = mana;
+        isTapped = false;
+    }
+
+    void Play()
+    {
+        isTapped = false;
+
+    }
+     void Tap()
+    {
+         isTapped = true;
+    }
+
+};
+
+
+class CreatureCard : public Card {
 protected:
     int attackPower;
     int maxHP;
     int hp;
-    bool hasFirstStrike;
-    std::string manaCost;
-    std::string color;
-    void attack(){
+    bool hasFirstStrike = false;
+    string manaCost;
+    string color;
+    bool isTapped;
+    bool isDestroyed;
+
+public:
+    CreatureCard(string name, string type, int attackPower, string manaCost, string color, int hp) :Card(name, type)
+    {
+        this->attackPower = attackPower;
+        this->manaCost = manaCost;
+        this->color = color;
+        this->hp = hp;
+        isTapped = false;
+        isDestroyed = false;
+    }
+    void attack() {
         hp = maxHP;
     }
+     void Tap()
+    {
 
-public:
-    creatureCard(std::string n, std::string t, int attPow, std::string manaCo, std::string c, int hP):Card(n,t),attackPower(attPow), manaCost(manaCo), color(c), maxHP(hP){
-        hp = maxHP;
     }
+     
+     void printInfo()
+     {
+         cout << name << " " << type << " " << attackPower << " " << manaCost << " " << color << " " << hp << endl;
+     }
+        
 };
-class Effect{
+
+
+class Effect {
 
 };
-class enchantmentCard: public Card{
+
+
+class EnchantmentCard : public Card {
 protected:
-    std::string manaCost;
-    std::string color;
+    string manaCost;
+    string color;
     Effect effect;
-    enchantmentCard(std::string n, std::string t, std::string manaCo, std::string c, Effect e):Card(n,t), manaCost(manaCo), color(c), effect(e){
+
+public:
+    EnchantmentCard(string name, string type, string manaCost, string color, Effect &effect ) :Card(name, type)
+    {
+        
+        this->manaCost = manaCost;
+        this->color = color;
+        this->effect = effect;
+       
+    }
+     void Tap()
+    {
 
     }
 };
 
-class sorceryCard: public Card{
+class SorceryCard : public Card {
 protected:
-    std::string manaCost;
-    std::string color;
+    string manaCost;
+    string color;
     Effect effect;
 public:
-    sorceryCard(std::string n, std::string t, std::string m, std::string c, Effect e) : Card(n, t), manaCost(m), effect(e), color(c) {
+    SorceryCard(string name, string type, string manaCost, string color, Effect& effect) :Card(name, type)
+    {
 
+        this->manaCost = manaCost;
+        this->color = color;
+        this->effect = effect;
     }
+
 };
 
-class Player{
+class Player {
 protected:
-    std::vector<Card> deck, hand, inPlay, discard;
+    vector<Card> deck, hand, inPlay, discard;
+    bool hasWon;
+    int mana;
+    int hp;
+
 public:
-    void addCardToDeck(Card card){
+    Player()
+    {
+        hp = 15;
+        mana = 0;
+        hasWon = false;
+
+    }
+    bool getHasWon()
+    {
+        return hasWon;
+    }
+
+    void addCardToDeck(Card card) {
         deck.push_back(card);
     }
+
+    void addCardToDiscard(const Card &card)
+    {
+        discard.push_back(card);
+    }
+
+    void printHand()
+    {
+        deck[0].printInfo();
+    }
 };
 
-std::vector<Player> players;
-void turnLoop(){
+vector<Player> players; 
+
+
+void turnLoop() {
 
 }
-void createDecks(){
+void createDecks(Player &p1,Player &p2) {
     Effect effect;
-    Player player1;
-    std::vector<Card> player1Cards;
     //Creature Cards
-    player1Cards.push_back(creatureCard("Soldier", "Creature", 1, "W", "White", 1));
-    player1Cards.push_back(creatureCard("Soldier", "Creature", 1, "W", "White", 1));
-    player1Cards.push_back(creatureCard("Soldier", "Creature", 1, "W", "White", 1));
-    player1Cards.push_back(creatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
-    player1Cards.push_back(creatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
-    player1Cards.push_back(creatureCard("White Knight", "Creature", 2, "WW", "White", 2));
-    player1Cards.push_back(creatureCard("White Knight", "Creature", 2, "WW", "White", 2));
-    player1Cards.push_back(creatureCard("Angry Bear", "Creature", 3, "2G", "Green", 2));
-    player1Cards.push_back(creatureCard("Guard", "Creature", 2, "2WW", "White", 5));
-    player1Cards.push_back(creatureCard("Werewolf", "Creature", 4, "2GW", "Green", 6));
+
+    p1.addCardToDeck(CreatureCard("Soldier", "Creature", 1, "W", "White", 1));
+    p1.addCardToDeck(CreatureCard("Soldier", "Creature", 1, "W", "White", 1));
+    p1.addCardToDeck(CreatureCard("Soldier", "Creature", 1, "W", "White", 1));
+    p1.addCardToDeck(CreatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
+    p1.addCardToDeck(CreatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
+    p1.addCardToDeck(CreatureCard("White Knight", "Creature", 2, "WW", "White", 2));
+    p1.addCardToDeck(CreatureCard("White Knight", "Creature", 2, "WW", "White", 2));
+    p1.addCardToDeck(CreatureCard("Angry Bear", "Creature", 3, "2G", "Green", 2));
+    p1.addCardToDeck(CreatureCard("Guard", "Creature", 2, "2WW", "White", 5));
+    p1.addCardToDeck(CreatureCard("Werewolf", "Creature", 4, "2GW", "Green", 6));
     //Sorcery Cards
-    player1Cards.push_back(sorceryCard("Disenchant", "Sorcery", "White", "1W", effect));
-    player1Cards.push_back(sorceryCard("Lightning Bolt", "Sorcery", "Green", "1G", effect));
-    player1Cards.push_back(sorceryCard("Flood", "Sorcery", "Flood", "1GW", effect));
-    player1Cards.push_back(sorceryCard("Flood", "Sorcery", "Flood", "1GW", effect));
+    p1.addCardToDeck(SorceryCard("Disenchant", "Sorcery", "White", "1W", effect));
+    p1.addCardToDeck(SorceryCard("Lightning Bolt", "Sorcery", "Green", "1G", effect));
+    p1.addCardToDeck(SorceryCard("Flood", "Sorcery", "Flood", "1GW", effect));
+    p1.addCardToDeck(SorceryCard("Flood", "Sorcery", "Flood", "1GW", effect));
     //Enchantment Card
-    player1Cards.push_back(sorceryCard("Rage", "Enchantment", "Green", "G", effect));
-    player1Cards.push_back(sorceryCard("Holy War", "Enchantment", "White", "1W", effect));
-    player1Cards.push_back(sorceryCard("Holy Light", "Enchantment", "White", "1W", effect));
+    p1.addCardToDeck(SorceryCard("Rage", "Enchantment", "Green", "G", effect));
+    p1.addCardToDeck(SorceryCard("Holy War", "Enchantment", "White", "1W", effect));
+    p1.addCardToDeck(SorceryCard("Holy Light", "Enchantment", "White", "1W", effect));
     //Land Card
-    player1Cards.push_back(landCard("Plains", "Land", "W"));
-    player1Cards.push_back(landCard("Plains", "Land", "W"));
-    player1Cards.push_back(landCard("Plains", "Land", "W"));
-    player1Cards.push_back(landCard("Plains", "Land", "W"));
-    player1Cards.push_back(landCard("Plains", "Land", "W"));
-    player1Cards.push_back(landCard("Forest", "Land", "G"));
-    player1Cards.push_back(landCard("Forest", "Land", "G"));
-    player1Cards.push_back(landCard("Forest", "Land", "G"));
-    player1Cards.push_back(landCard("Island", "Land", "L"));
-
-    for(int i = 0;i<player1Cards.capacity();i++){
-        player1.addCardToDeck(player1Cards[i]);
-    }
-
-    Player player2;
-    std::vector<Card> player2Cards;
+    p1.addCardToDeck(LandCard("Plains", "Land", "W"));
+    p1.addCardToDeck(LandCard("Plains", "Land", "W"));
+    p1.addCardToDeck(LandCard("Plains", "Land", "W"));
+    p1.addCardToDeck(LandCard("Plains", "Land", "W"));
+    p1.addCardToDeck(LandCard("Plains", "Land", "W"));
+    p1.addCardToDeck(LandCard("Forest", "Land", "G"));
+    p1.addCardToDeck(LandCard("Forest", "Land", "G"));
+    p1.addCardToDeck(LandCard("Forest", "Land", "G"));
+    p1.addCardToDeck(LandCard("Island", "Land", "L"));
+    
+  
     //Creature Cards
-    player2Cards.push_back(creatureCard("Soldier", "Creature", 1, "W", "White", 1));
-    player2Cards.push_back(creatureCard("Soldier", "Creature", 1, "W", "White", 1));
-    player2Cards.push_back(creatureCard("Soldier", "Creature", 1, "W", "White", 1));
-    player2Cards.push_back(creatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
-    player2Cards.push_back(creatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
-    player2Cards.push_back(creatureCard("White Knight", "Creature", 2, "WW", "White", 2));
-    player2Cards.push_back(creatureCard("White Knight", "Creature", 2, "WW", "White", 2));
-    player2Cards.push_back(creatureCard("Angry Bear", "Creature", 3, "2G", "Green", 2));
-    player2Cards.push_back(creatureCard("Guard", "Creature", 2, "2WW", "White", 5));
-    player2Cards.push_back(creatureCard("Werewolf", "Creature", 4, "2GW", "Green", 6));
+    p2.addCardToDeck(CreatureCard("Soldier", "Creature", 1, "W", "White", 1));
+    p2.addCardToDeck(CreatureCard("Soldier", "Creature", 1, "W", "White", 1));
+    p2.addCardToDeck(CreatureCard("Soldier", "Creature", 1, "W", "White", 1));
+    p2.addCardToDeck(CreatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
+    p2.addCardToDeck(CreatureCard("Armored Pegasus", "Creature", 1, "1W", "White", 2));
+    p2.addCardToDeck(CreatureCard("White Knight", "Creature", 2, "WW", "White", 2));
+    p2.addCardToDeck(CreatureCard("White Knight", "Creature", 2, "WW", "White", 2));
+    p2.addCardToDeck(CreatureCard("Angry Bear", "Creature", 3, "2G", "Green", 2));
+    p2.addCardToDeck(CreatureCard("Guard", "Creature", 2, "2WW", "White", 5));
+    p2.addCardToDeck(CreatureCard("Werewolf", "Creature", 4, "2GW", "Green", 6));
     //Sorcery Cards
-    player1Cards.push_back(sorceryCard("Reanimate", "Sorcery", "Black", "B", effect));
-    player1Cards.push_back(sorceryCard("Plague", "Sorcery", "Black", "2B", effect));
-    player1Cards.push_back(sorceryCard("Terror", "Sorcery", "Black", "1B", effect));
-    player1Cards.push_back(sorceryCard("Terror", "Sorcery", "Black", "1B", effect));
+    p2.addCardToDeck(SorceryCard("Reanimate", "Sorcery", "Black", "B", effect));
+    p2.addCardToDeck(SorceryCard("Plague", "Sorcery", "Black", "2B", effect));
+    p2.addCardToDeck(SorceryCard("Terror", "Sorcery", "Black", "1B", effect));
+    p2.addCardToDeck(SorceryCard("Terror", "Sorcery", "Black", "1B", effect));
     //Enchantment Card
-    player1Cards.push_back(sorceryCard("Unholy War", "Land", "Black", "1B", effect));
-    player1Cards.push_back(sorceryCard("Restrain", "Enchantment", "Red", "2R", effect));
-    player1Cards.push_back(sorceryCard("Slow", "Enchantment", "Black", "B", effect));
+    p2.addCardToDeck(SorceryCard("Unholy War", "Land", "Black", "1B", effect));
+    p2.addCardToDeck(SorceryCard("Restrain", "Enchantment", "Red", "2R", effect));
+    p2.addCardToDeck(SorceryCard("Slow", "Enchantment", "Black", "B", effect));
     //Land Card
-    player1Cards.push_back(landCard("Swamp", "Land", "B"));
-    player1Cards.push_back(landCard("Swamp", "Land", "B"));
-    player1Cards.push_back(landCard("Swamp", "Land", "B"));
-    player1Cards.push_back(landCard("Swamp", "Land", "B"));
-    player1Cards.push_back(landCard("Swamp", "Land", "B"));
-    player1Cards.push_back(landCard("Mountain", "Land", "R"));
-    player1Cards.push_back(landCard("Mountain", "Land", "R"));
-    player1Cards.push_back(landCard("Mountain", "Land", "R"));
-    player1Cards.push_back(landCard("Island", "Land", "L"));
-    for(int i = 0;i<player2Cards.capacity();i++){
-        player2.addCardToDeck(player2Cards[i]);
-    }
+    p2.addCardToDeck(LandCard("Swamp", "Land", "B"));
+    p2.addCardToDeck(LandCard("Swamp", "Land", "B"));
+    p2.addCardToDeck(LandCard("Swamp", "Land", "B"));
+    p2.addCardToDeck(LandCard("Swamp", "Land", "B"));
+    p2.addCardToDeck(LandCard("Swamp", "Land", "B"));
+    p2.addCardToDeck(LandCard("Mountain", "Land", "R"));
+    p2.addCardToDeck(LandCard("Mountain", "Land", "R"));
+    p2.addCardToDeck(LandCard("Mountain", "Land", "R"));
+    p2.addCardToDeck(LandCard("Island", "Land", "L"));
 
-    player1Cards.clear();
-    player2Cards.clear();
 }
 int turn = 0;
-void playGame(){
-    createDecks();
+void playGame() {
+    Player p1;
+    Player p2;
 
+
+
+    createDecks(p1,p2);
     bool isGameFinished = false;
-    while(!isGameFinished){
+    
+
+    while (!isGameFinished) {
         turnLoop();
-        turn = (turn==0) ? turn=1:turn=0;
+        turn = (turn == 0) ? turn = 1 : turn = 0;
+
+        isGameFinished = true;
+
     }
+
+    p1.printHand();
+    
 }
 int main() {
     playGame();
+
+    
+    
     return 0;
 }
