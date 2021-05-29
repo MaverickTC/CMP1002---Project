@@ -26,8 +26,6 @@ public:
     {
         cout << name << " " << type;
     }
-
-
 };
 
 class Player {
@@ -76,18 +74,18 @@ protected:
    bool isTapped;
    //Player playerM;
 public:
-	Player *p1;
-    LandCard(string name, string type, string mana,Player *p1) :Card(name, type)
+    std::shared_ptr<Player> p1;
+    LandCard(string name, string type, string mana,std::shared_ptr<Player> p1) :Card(name, type)
     {
         this->mana = mana;
         isTapped = false;
         this-> p1 = p1;
     }
 
-    LandCard():Card()
-    {
+    //LandCard():Card()
+    //{
 
-    }
+    //}
 
     void Play()
     {
@@ -154,13 +152,11 @@ protected:
 public:
     EnchantmentCard(string name, string type, string manaCost, string color, Effect &effect ) :Card(name, type)
     {
-        
         this->manaCost = manaCost;
         this->color = color;
         this->effect = effect;
-       
     }
-     void Tap()
+    void Tap()
     {
 
     }
@@ -190,20 +186,13 @@ vector<Player> players;
 void turnLoop() {
 
 }
-void createDecks(Player *p1,Player *p2) {
+void createDecks(std::shared_ptr<Player> p1,std::shared_ptr<Player> p2) {
     Effect effect;
 
-    Player* player1;
-    Player* player2;
-    player1 = p1;
-    player2 = p2;
-
-    shared_ptr<Card>C1= make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1);
-    shared_ptr<Card>C2 = make_shared<LandCard>("Forest", "Land", "G",player1);
+    shared_ptr<Card>C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1);
+    shared_ptr<Card>C2 = make_shared<LandCard>("Forest", "Land", "G",p1);
    
     p1->addCardToDeck(C2); //sadece land'i ekledim
-
-
 
 
 
@@ -274,31 +263,26 @@ void createDecks(Player *p1,Player *p2) {
 }
 int turn = 0;
 void playGame() {
-    Player *p1;
-    Player *p2;
-
-    p1=new Player();
-    p2=new Player();
-
-    createDecks(p1,p2);
     bool isGameFinished = false;
-    
 
     while (!isGameFinished) {
         turnLoop();
         turn = (turn == 0) ? turn = 1 : turn = 0;
 
         isGameFinished = true;
-
     }
-
-    p1.printHand();
-    
 }
-int main() {
-    playGame();
+void setupGame(){
+    shared_ptr<Player> p1 = make_shared<Player>();
+    shared_ptr<Player> p2 = make_shared<Player>();
 
-    
+    p1->printHand();
+
+    playGame();
+}
+
+int main() {
+    setupGame();
     
     return 0;
 }
