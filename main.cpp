@@ -148,7 +148,6 @@ public:
         vector<int> manaAfterPayment;
         setVectorSize(&manaAfterPayment);
         bool status = true;
-        cout << manaCost.size() << manaCount.size() << manaAfterPayment.size() << endl;
         for(int i = 0;i<5;i++){
             if(manaCount[i]<manaCost[i]){
                 if(i==4){
@@ -631,7 +630,6 @@ void setupGame() {
 }
 int main() {
     setupGame();
-    
 
     return 0;
 }
