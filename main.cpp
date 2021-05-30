@@ -565,6 +565,7 @@ void setupGame() {
 }
 int main() {
     setupGame();
+    
 
     return 0;
 }
