@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -51,6 +52,7 @@ protected:
 
 public:
     vector<shared_ptr<Card>> library, hand, inPlay, discard;
+    vector<int> manaCount; //White, Green, Black, Red, Colorless;
     Player()
     {
         hp = 15;
@@ -66,6 +68,59 @@ public:
     int getMana()
     {
         return playerMana;
+    }
+    void checkManaCost(string s){
+        vector<int> requiredMana;
+        for(int i = 0;i<s.length();i++){
+            if(isdigit(s[i])){
+                requiredMana[5]++;
+            } else {
+                if(s[i]=='W'){
+                    requiredMana[0]++;
+                } if(s[i]=='G'){
+                    requiredMana[1]++;
+                } if(s[i]=='B'){
+                    requiredMana[2]++;
+                } if(s[i]=='R'){
+                    requiredMana[3]++;
+                }
+            }
+        }
+        payMana(requiredMana);
+    }
+    void payMana(vector<int> manaCost){
+        vector<int> manaAfterPayment;
+        bool status = true;
+        for(int i = 0;i<5;i++){
+            if(manaCount[i]<manaCost[i]){
+                if(i==4){
+                    int totalManaToUse = 0;
+                    bool possibleToBuy = false;
+                    for(int x = 0;x<4;x++){
+                        if(totalManaToUse + manaAfterPayment[x] >= manaCount[i]){
+                            manaAfterPayment[x] = manaCount[i] - totalManaToUse;
+                            possibleToBuy = true;
+                        } else {
+                            totalManaToUse += manaAfterPayment[x];
+                            manaAfterPayment[x] = 0;
+                        }
+                    }
+                    if(!possibleToBuy){
+                        status = false;
+                    }
+                } else {
+                    status = false;
+                }
+            } else {
+                manaAfterPayment.push_back(manaCount[i] - manaCost[i]);
+            }
+        }
+
+        if(status == true){
+            for(int i = 0;i<manaAfterPayment.size();i++){
+                manaCount[i] = manaAfterPayment[i];
+            }
+        }
     }
     
     int getHp()
@@ -196,6 +251,7 @@ void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1){
     }
 }
 
+
 class Effect {
 
 };
@@ -285,10 +341,10 @@ public:
     {
          isTapped = true;
     }
-     void Play()
+     void Play(shared_ptr<Card>& C1)
      {
          //shared_ptr<Card>CreaturePlayed = make_shared<CreatureCard>(name, type, attackPower,manaCost,color,hp ,p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
-         //p1->addCardToinPlay(CreaturePlayed);
+         p1->addCardToinPlay(C1);
      }
      
      void printInfo()
@@ -382,6 +438,7 @@ public:
 void turnLoop() {
 
 }
+
 void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     Effect effect;
     shared_ptr<Player> player1;
@@ -390,23 +447,14 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     player2 = p2;
 
     ////Creature Cards
-    shared_ptr<Card>C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1,player1);
-    shared_ptr<Card>C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
-    shared_ptr<Card>C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
-    shared_ptr<Card>C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
-    shared_ptr<Card>C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
-    shared_ptr<Card>C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
-    shared_ptr<Card>C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
-    shared_ptr<Card>C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player1);
-    shared_ptr<Card>C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player1);
-    shared_ptr<Card>C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player1);
+
 
     ////Sorcery Cards
-    shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W",player1,  effect);
+    shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1, effect);
     shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1, effect);
     shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, effect);
     shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, effect);
-     
+
     ////Enchantment Cards
     shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1, effect);
     shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1, effect);
@@ -423,16 +471,7 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     shared_ptr<Card>C25 = make_shared<LandCard>("Forest", "Land", "G", player1);
     shared_ptr<Card>C26 = make_shared<LandCard>("Island", "Land", "L", player1);
 
-    p1->addCardToDeck(C1);
-    p1->addCardToDeck(C2);
-    p1->addCardToDeck(C3);
-    p1->addCardToDeck(C4);
-    p1->addCardToDeck(C5);
-    p1->addCardToDeck(C6);
-    p1->addCardToDeck(C7);
-    p1->addCardToDeck(C8);
-    p1->addCardToDeck(C9);
-    p1->addCardToDeck(C10);
+
     p1->addCardToDeck(C11);
     p1->addCardToDeck(C12);
     p1->addCardToDeck(C13);
@@ -452,50 +491,29 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //Creature Cards
-    C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1,player2);
-    C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1,player2);
-    C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1,player2);
-    C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2,player2);
-    C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2,player2);
-    C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2,player2);
-    C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2,player2);
-    C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2,player2);
-    C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5,player2);
-    C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6,player2);
 
     //Sorcery Cards
-    C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2,effect);
-    C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B",player2, effect);
-    C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B",player2, effect);
-    C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2,effect);
+    C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2, effect);
+    C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2, effect);
+    C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, effect);
+    C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, effect);
 
     //Enchantment Card
-    C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B",player2, effect);
-    C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2,effect);
-    C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2,effect);
-    
+    C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2, effect);
+    C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2, effect);
+    C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2, effect);
+
     //Land Card
     C18 = make_shared<LandCard>("Swamp", "Land", "B", player2);
     C19 = make_shared<LandCard>("Swamp", "Land", "B", player2);
     C20 = make_shared<LandCard>("Swamp", "Land", "B", player2);
     C21 = make_shared<LandCard>("Swamp", "Land", "B", player2);
-    C22 = make_shared<LandCard>("Swamp", "Land", "B", player2 );
+    C22 = make_shared<LandCard>("Swamp", "Land", "B", player2);
     C23 = make_shared<LandCard>("Mountain", "Land", "R", player2);
     C24 = make_shared<LandCard>("Mountain", "Land", "R", player2);
     C25 = make_shared<LandCard>("Mountain", "Land", "R", player2);
     C26 = make_shared<LandCard>("Island", "Land", "L", player2);
 
-    p2->addCardToDeck(C1);
-    p2->addCardToDeck(C2);
-    p2->addCardToDeck(C3);
-    p2->addCardToDeck(C4);
-    p2->addCardToDeck(C5);
-    p2->addCardToDeck(C6);
-    p2->addCardToDeck(C7);
-    p2->addCardToDeck(C8);
-    p2->addCardToDeck(C9);
-    p2->addCardToDeck(C10);
     p2->addCardToDeck(C11);
     p2->addCardToDeck(C12);
     p2->addCardToDeck(C13);
@@ -515,7 +533,6 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 
-
 int turn = 0;
 void playGame() {
     bool isGameFinished = false;
@@ -528,6 +545,7 @@ void playGame() {
     }
 }
 
+
 void setupGame() {
     shared_ptr<Player> p1 = make_shared<Player>();
     shared_ptr<Player> p2 = make_shared<Player>();
@@ -539,11 +557,14 @@ void setupGame() {
 
     p1->printLibrary();//bu fonksiyon kontrol için,kalkacak
 
+    string s;
+    cin >> s;
+
+    p1->checkManaCost("1W");
+
     //burdan aşağısı loop'ta olucak tabii- biraz manuel denedim
     cout << endl;
     cout << "YOU HAVE: " << p1->getMana() << " MANA." << endl;
-  
-  
 
     //p1->drawCard(p1->library[17]); //buralar tabi randomize olmalı. burada ilk item desteden çekiyorum
     //p1->drawCard(p1->library[18]);
@@ -553,8 +574,8 @@ void setupGame() {
     p1->printHand();
     p1->printInplay();
 
-    p1->playItemAtHand(3);//sorcery, discard pile'a gidiyor.
-    p1->playItemAtHand(0);//land kart. in play'e gidiyor.
+    //p1->playItemAtHand(3);//sorcery, discard pile'a gidiyor.
+    //p1->playItemAtHand(0);//land kart. in play'e gidiyor.
 
     p1->printHand();
     p1->printInplay();
@@ -564,7 +585,9 @@ void setupGame() {
     playGame();
 }
 int main() {
+
     setupGame();
+    //setupGame();
 
     return 0;
 }
