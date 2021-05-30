@@ -25,6 +25,11 @@ public:
 
     virtual void Play() = 0;
 
+    virtual string getType()
+    {
+        return type;
+    }
+    
     virtual void Tap()
     {
         isTapped = true;
@@ -77,7 +82,7 @@ public:
         library.push_back(C1);
     }
 
-    void drawCard(shared_ptr<Card>& C1) {   //addcardtohand i draw yaptım biraz daha net olsun diye.
+    void drawCard(shared_ptr<Card>& C1) {  
         if (find(library.begin(), library.end(), C1) != library.end()) {
             library.erase(remove(library.begin(), library.end(), C1), library.end());
             hand.push_back(C1);
@@ -89,20 +94,19 @@ public:
             hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
             inPlay.push_back(C1);
         }
-
-
-        //inPlay.push_back(C1);
     }
 
     void addCardToDiscard(shared_ptr<Card>& C1)
     {
-        if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
-            inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
+        if (find(hand.begin(), hand.end(), C1) != hand.end()) {
+            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
             discard.push_back(C1);
         }
 
-
-        //discard.push_back(C1);
+        else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
+            inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
+            discard.push_back(C1);
+        }
     }
 
     void printHand()
@@ -112,6 +116,7 @@ public:
         {
             (hand[i])->printInfo();
             cout << '\t';
+            cout << "index: " << i << '\t';
         }
         cout << endl;
     }
@@ -157,8 +162,16 @@ public:
         //    playItemAtHand(index);
         //}
 
-        //bu kod daha güzel yazılcak 
         hand[a]->Play();
+
+        if (hand[a]->getType() == "Sorcery")
+        {
+            addCardToDiscard(hand[a]);
+        }
+        else
+        {
+            addCardToinPlay(hand[a]);
+        }
     }
 
 };
@@ -200,8 +213,12 @@ public:
     
      p1->addMana(p1->getMana()+1);
      //shared_ptr<Card>LandPlayed = make_shared<LandCard>(name, type, mana, p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
-     //p1->addCardToinPlay(LandPlayed);
 
+    }
+
+    string getType()
+    {
+        return type;
     }
 
 
@@ -250,14 +267,20 @@ public:
     }
      void Play()
      {
-         shared_ptr<Card>CreaturePlayed = make_shared<CreatureCard>(name, type, attackPower,manaCost,color,hp ,p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
-         p1->addCardToinPlay(CreaturePlayed);
+         //shared_ptr<Card>CreaturePlayed = make_shared<CreatureCard>(name, type, attackPower,manaCost,color,hp ,p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
+         //p1->addCardToinPlay(CreaturePlayed);
      }
      
      void printInfo()
      {
          cout << name << " " << type << " " << attackPower << " " << manaCost << " " << color << " " << hp;
      }
+
+     string getType()
+     {
+         return type;
+     }
+    
         
 };
 
@@ -291,9 +314,14 @@ public:
     }
      void Play()
      {
-         shared_ptr<Card>EnchantmentPlayed = make_shared<EnchantmentCard>(name, type, manaCost, color, p1, effect);
-         p1->addCardToinPlay(EnchantmentPlayed);
+     /*    shared_ptr<Card>EnchantmentPlayed = make_shared<EnchantmentCard>(name, type, manaCost, color, p1, effect);
+         p1->addCardToinPlay(EnchantmentPlayed);*/
 
+     }
+
+     string getType()
+     {
+         return type;
      }
 };
 
@@ -302,6 +330,7 @@ protected:
     string manaCost;
     string color;
     Effect effect;
+    
 public:
     std::shared_ptr<Player> p1;
     SorceryCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect& effect) :Card(name, type)
@@ -320,8 +349,13 @@ public:
 
     void Play()
     {
-        shared_ptr<Card>SorceryPlayed = make_shared<SorceryCard>(name, type, manaCost, color, p1, effect); //burası değişmeli, in play'e kart gitmiyor elden çünkü farklı bir obje..
-        p1->addCardToDiscard(SorceryPlayed);//sorcery oynanınca discard'a gidiyor.
+        //shared_ptr<Card>SorceryPlayed = make_shared<SorceryCard>(name, type, manaCost, color, p1, effect); //burası değişmeli, in play'e kart gitmiyor elden çünkü farklı bir obje..
+        //p1->addCardToDiscard(SorceryPlayed);//sorcery oynanınca discard'a gidiyor.
+    }
+
+    string getType()
+    {
+        return type;
     }
 };
 
@@ -485,30 +519,23 @@ void setupGame() {
     cout << endl;
     cout << "YOU HAVE: " << p1->getMana() << " MANA." << endl;
   
-    p1->printHand();
-    p1->printInplay();
-    
+  
 
     p1->drawCard(p1->library[17]); //buralar tabi randomize olmalı. burada ilk item desteden çekiyorum
     p1->drawCard(p1->library[18]);
     p1->drawCard(p1->library[19]);//3 tane land çektim.
+    p1->drawCard(p1->library[11]);
 
     p1->printHand();
     p1->printInplay();
-  
-    p1->playItemAtHand(0);
-    p1->playItemAtHand(1);//eldeki 3 land'i de oynuyorum
-    p1->playItemAtHand(2);
 
-    p1->addCardToinPlay(p1->hand[0]);
-    p1->addCardToinPlay(p1->hand[1]);
-    p1->addCardToinPlay(p1->hand[0]);//burası değişmeli çok kötü kod yazımı bu.
+    p1->playItemAtHand(3);//sorcery, discard pile'a gidiyor.
+    p1->playItemAtHand(0);//land kart. in play'e gidiyor.
 
     p1->printHand();
     p1->printInplay();
-    p1->printHand();
-    
-    
+    p1->printDiscard();
+
     cout << "YOU HAVE: " << p1->getMana() << " MANA." << endl;
     playGame();
 }
