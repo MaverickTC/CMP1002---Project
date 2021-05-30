@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <sstream>
 
 using namespace std;
 
@@ -17,7 +16,7 @@ public:
         isTapped = false;
     }
 
-    Card(string name, string type )
+    Card(string name, string type)
     {
         this->name = name;
         this->type = type;
@@ -30,35 +29,41 @@ public:
     {
         return type;
     }
-    
+
     virtual void Tap()
     {
         isTapped = true;
     }
 
-    virtual void printInfo() 
+    virtual void printInfo()
     {
         cout << name << " " << type;
     }
 
 };
-
+void setVectorSize(vector<int>* v){ //Vektör boşsa içine 5 tane 0 ekliyor. (Mana ücretleri için)
+    if(v->size()==0){
+        for(int i = 0;i<5;i++){
+            v->push_back(0);
+        }
+    }
+}
 class Player {
 protected:
-    
+
     bool hasWon;
     int playerMana;
     int hp;
 
 public:
     vector<shared_ptr<Card>> library, hand, inPlay, discard;
-    vector<int> manaCount; //White, Green, Black, Red, Colorless;
+    vector<int> manaCount; //White, Green, Black, Red, Colorless
     Player()
     {
         hp = 15;
         playerMana = 0;
         hasWon = false;
-
+        setVectorSize(&manaCount);
     }
     bool getHasWon()
     {
@@ -69,11 +74,62 @@ public:
     {
         return playerMana;
     }
-    void checkManaCost(string s){
+
+    int getHp()
+    {
+        return hp;
+    }
+
+    int getLibraryElementCount() {
+        return library.size();
+    }
+
+    void addMana(int mana)
+    {
+        playerMana = mana;
+    }
+
+    void addCardToDeck(shared_ptr<Card>& C1) {
+        library.push_back(C1);
+    }
+
+    void drawCard(shared_ptr<Card>& C1) {
+        if (find(library.begin(), library.end(), C1) != library.end()) {
+            library.erase(remove(library.begin(), library.end(), C1), library.end());
+            hand.push_back(C1);
+        }
+    }
+    void addCardToinPlay(shared_ptr<Card>& C1)
+    {
+        if (find(hand.begin(), hand.end(), C1) != hand.end()) {
+            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
+            inPlay.push_back(C1);
+        }
+    }
+
+    void addCardToDiscard(shared_ptr<Card>& C1)
+    {
+        if (find(hand.begin(), hand.end(), C1) != hand.end()) {
+            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
+            discard.push_back(C1);
+        }
+        else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
+            inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
+            discard.push_back(C1);
+        }
+    }
+
+    void addCardToHandByInt(int id) {
+        hand.push_back(library[id]);
+        library.erase(library.begin() + id);
+    }
+
+    void checkManaCost(string s){ //Stringi gerekli olan mana ücretleri için vektöre çeviriyor
         vector<int> requiredMana;
+        setVectorSize(&requiredMana);
         for(int i = 0;i<s.length();i++){
             if(isdigit(s[i])){
-                requiredMana[5]++;
+                requiredMana[4]++;
             } else {
                 if(s[i]=='W'){
                     requiredMana[0]++;
@@ -86,11 +142,13 @@ public:
                 }
             }
         }
-        payMana(requiredMana);
+        cout<<payMana(requiredMana)<<endl; //Denemek için print ediyor normalde etmeyecek satış işlemi olduysa 1 print ediyor.
     }
-    void payMana(vector<int> manaCost){
+    bool payMana(vector<int> manaCost){ //Vektörü alıp paramız yetiyor mu diye kontrol ediyor.
         vector<int> manaAfterPayment;
+        setVectorSize(&manaAfterPayment);
         bool status = true;
+        cout << manaCost.size() << manaCount.size() << manaAfterPayment.size() << endl;
         for(int i = 0;i<5;i++){
             if(manaCount[i]<manaCost[i]){
                 if(i==4){
@@ -112,7 +170,7 @@ public:
                     status = false;
                 }
             } else {
-                manaAfterPayment.push_back(manaCount[i] - manaCost[i]);
+                manaAfterPayment[i] = (manaCount[i] - manaCost[i]);
             }
         }
 
@@ -121,54 +179,7 @@ public:
                 manaCount[i] = manaAfterPayment[i];
             }
         }
-    }
-    
-    int getHp()
-    {
-        return hp;
-    }
-
-    int getLibraryElementCount(){
-        return library.size();
-    }
-
-    void addMana(int mana)
-    {
-        playerMana = mana;
-    }
-
-    void addCardToDeck(shared_ptr<Card>& C1) {
-        library.push_back(C1);
-    }
-
-    void drawCard(shared_ptr<Card>& C1) {  
-        if (find(library.begin(), library.end(), C1) != library.end()) {
-            library.erase(remove(library.begin(), library.end(), C1), library.end());
-            hand.push_back(C1);
-        }
-    }
-    void addCardToinPlay(shared_ptr<Card>& C1)
-    {
-        if (find(hand.begin(), hand.end(), C1) != hand.end()) {
-            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
-            inPlay.push_back(C1);
-        }
-    }
-
-    void addCardToDiscard(shared_ptr<Card>& C1)
-    {
-        if (find(hand.begin(), hand.end(), C1) != hand.end()) {
-            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
-            discard.push_back(C1);
-        } else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
-            inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
-            discard.push_back(C1);
-        }
-    }
-
-    void addCardToHandByInt(int id){
-        hand.push_back(library[id]);
-        library.erase(library.begin() + id);
+        return status;
     }
 
     void printHand()
@@ -186,7 +197,7 @@ public:
     void printInplay()
     {
         cout << "CARDS IN PLAY: " << endl;
-        for (int i=0 ; i<inPlay.size(); i++)
+        for (int i = 0; i < inPlay.size(); i++)
         {
             (inPlay[i])->printInfo();
             cout << '\t';
@@ -238,19 +249,18 @@ public:
 
 };
 
-void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1){
+void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1) {
     vector<int> possibleCards;
     const int elementCount = p1->getLibraryElementCount();
-    for(int i = 0;i<p1->getLibraryElementCount();i++){
+    for (int i = 0; i < p1->getLibraryElementCount(); i++) {
         possibleCards.push_back(i);
     }
     srand(time(0));
-    for(int i = 0;i<5;i++){
-        int key = rand()%elementCount;
-        p1->addCardToHandByInt(key+1);
+    for (int i = 0; i < 5; i++) {
+        int key = rand() % elementCount;
+        p1->addCardToHandByInt(key + 1);
     }
 }
-
 
 class Effect {
 
@@ -258,10 +268,10 @@ class Effect {
 
 class LandCard : public Card {
 protected:
-   string mana;
-   bool isTapped;
-   std::shared_ptr<Player> p1;
-   
+    string mana;
+    bool isTapped;
+    std::shared_ptr<Player> p1;
+
 public:
     LandCard(string name, string type, string mana, std::shared_ptr<Player> p1) :Card(name, type)
     {
@@ -269,7 +279,7 @@ public:
         isTapped = false;
         this->p1 = p1;
     }
-    LandCard():Card()
+    LandCard() :Card()
     {
         mana = "no mana ";
         isTapped = false;
@@ -282,13 +292,13 @@ public:
     void Tap()
     {
         isTapped = true;
-        
+
     }
     void Play()
-    {   
-    
-     p1->addMana(p1->getMana()+1);
-     //shared_ptr<Card>LandPlayed = make_shared<LandCard>(name, type, mana, p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
+    {
+
+        p1->addMana(p1->getMana() + 1);
+        //shared_ptr<Card>LandPlayed = make_shared<LandCard>(name, type, mana, p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
 
     }
 
@@ -313,9 +323,9 @@ protected:
     bool isDestroyed;
     std::shared_ptr<Player> p1;
 public:
-   
-    CreatureCard():Card(){
-        attackPower =0;
+
+    CreatureCard() :Card() {
+        attackPower = 0;
         manaCost = "null cost";
         color = "no color";
         hp = 0;
@@ -332,32 +342,32 @@ public:
         isTapped = false;
         isDestroyed = false;
         this->p1 = p1;
-      
+
     }
     void attack() {
         hp = maxHP;
     }
-     void Tap()
+    void Tap()
     {
-         isTapped = true;
+        isTapped = true;
     }
-     void Play(shared_ptr<Card>& C1)
-     {
-         //shared_ptr<Card>CreaturePlayed = make_shared<CreatureCard>(name, type, attackPower,manaCost,color,hp ,p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
-         p1->addCardToinPlay(C1);
-     }
-     
-     void printInfo()
-     {
-         cout << name << " " << type << " " << attackPower << " " << manaCost << " " << color << " " << hp;
-     }
+    void Play()
+    {
+        //shared_ptr<Card>CreaturePlayed = make_shared<CreatureCard>(name, type, attackPower,manaCost,color,hp ,p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
+        //p1->addCardToinPlay(CreaturePlayed);
+    }
 
-     string getType()
-     {
-         return type;
-     }
-    
-        
+    void printInfo()
+    {
+        cout << name << " " << type << " " << attackPower << " " << manaCost << " " << color << " " << hp;
+    }
+
+    string getType()
+    {
+        return type;
+    }
+
+
 };
 
 class EnchantmentCard : public Card {
@@ -367,38 +377,38 @@ protected:
     Effect effect;
     std::shared_ptr<Player> p1;
 public:
-    
+
     EnchantmentCard() :Card()
     {
         manaCost = "no cost";
         color = "no color";
     }
 
-    EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect &effect ) :Card(name, type)
+    EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect& effect) :Card(name, type)
     {
-        
+
         this->manaCost = manaCost;
         this->color = color;
         this->effect = effect;
         this->p1 = p1;
-       
+
     }
 
     void ActivateEnchantment()
     {
 
     }
-     void Play()
-     {
-     /*    shared_ptr<Card>EnchantmentPlayed = make_shared<EnchantmentCard>(name, type, manaCost, color, p1, effect);
-         p1->addCardToinPlay(EnchantmentPlayed);*/
+    void Play()
+    {
+        /*    shared_ptr<Card>EnchantmentPlayed = make_shared<EnchantmentCard>(name, type, manaCost, color, p1, effect);
+            p1->addCardToinPlay(EnchantmentPlayed);*/
 
-     }
+    }
 
-     string getType()
-     {
-         return type;
-     }
+    string getType()
+    {
+        return type;
+    }
 };
 
 class SorceryCard : public Card {
@@ -406,7 +416,7 @@ protected:
     string manaCost;
     string color;
     Effect effect;
-    
+
 public:
     std::shared_ptr<Player> p1;
     SorceryCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect& effect) :Card(name, type)
@@ -438,7 +448,6 @@ public:
 void turnLoop() {
 
 }
-
 void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     Effect effect;
     shared_ptr<Player> player1;
@@ -447,7 +456,16 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     player2 = p2;
 
     ////Creature Cards
-
+    shared_ptr<Card>C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
+    shared_ptr<Card>C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
+    shared_ptr<Card>C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
+    shared_ptr<Card>C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
+    shared_ptr<Card>C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
+    shared_ptr<Card>C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
+    shared_ptr<Card>C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
+    shared_ptr<Card>C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player1);
+    shared_ptr<Card>C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player1);
+    shared_ptr<Card>C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player1);
 
     ////Sorcery Cards
     shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1, effect);
@@ -471,7 +489,16 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     shared_ptr<Card>C25 = make_shared<LandCard>("Forest", "Land", "G", player1);
     shared_ptr<Card>C26 = make_shared<LandCard>("Island", "Land", "L", player1);
 
-
+    p1->addCardToDeck(C1);
+    p1->addCardToDeck(C2);
+    p1->addCardToDeck(C3);
+    p1->addCardToDeck(C4);
+    p1->addCardToDeck(C5);
+    p1->addCardToDeck(C6);
+    p1->addCardToDeck(C7);
+    p1->addCardToDeck(C8);
+    p1->addCardToDeck(C9);
+    p1->addCardToDeck(C10);
     p1->addCardToDeck(C11);
     p1->addCardToDeck(C12);
     p1->addCardToDeck(C13);
@@ -491,6 +518,17 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
+    //Creature Cards
+    C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
+    C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
+    C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
+    C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player2);
+    C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player2);
+    C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player2);
+    C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player2);
+    C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player2);
+    C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player2);
+    C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player2);
 
     //Sorcery Cards
     C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2, effect);
@@ -514,6 +552,16 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     C25 = make_shared<LandCard>("Mountain", "Land", "R", player2);
     C26 = make_shared<LandCard>("Island", "Land", "L", player2);
 
+    p2->addCardToDeck(C1);
+    p2->addCardToDeck(C2);
+    p2->addCardToDeck(C3);
+    p2->addCardToDeck(C4);
+    p2->addCardToDeck(C5);
+    p2->addCardToDeck(C6);
+    p2->addCardToDeck(C7);
+    p2->addCardToDeck(C8);
+    p2->addCardToDeck(C9);
+    p2->addCardToDeck(C10);
     p2->addCardToDeck(C11);
     p2->addCardToDeck(C12);
     p2->addCardToDeck(C13);
@@ -533,6 +581,7 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 
+
 int turn = 0;
 void playGame() {
     bool isGameFinished = false;
@@ -545,7 +594,6 @@ void playGame() {
     }
 }
 
-
 void setupGame() {
     shared_ptr<Player> p1 = make_shared<Player>();
     shared_ptr<Player> p2 = make_shared<Player>();
@@ -555,12 +603,9 @@ void setupGame() {
     selectRandomCardsFromLibraryToPutIntoHand(p1);
     selectRandomCardsFromLibraryToPutIntoHand(p2);
 
-    p1->printLibrary();//bu fonksiyon kontrol için,kalkacak
+    //p1->printLibrary();//bu fonksiyon kontrol için,kalkacak
 
-    string s;
-    cin >> s;
-
-    p1->checkManaCost("1W");
+    p1->checkManaCost("1W"); //Denemek için
 
     //burdan aşağısı loop'ta olucak tabii- biraz manuel denedim
     cout << endl;
@@ -585,9 +630,7 @@ void setupGame() {
     playGame();
 }
 int main() {
-
     setupGame();
-    //setupGame();
 
     return 0;
 }
