@@ -34,16 +34,30 @@ public:
     {
         isTapped = true;
     }
+    virtual void Untap()
+    {
+        isTapped = false;
+    }
 
     virtual void printInfo()
     {
         cout << name << " " << type;
     }
 
+    virtual bool getStatus()
+    {
+        return isTapped;
+    }
+
+    virtual void activateAbility(int a)
+    {
+      
+
+    }
 };
-void setVectorSize(vector<int>* v){ //Vektör boşsa içine 5 tane 0 ekliyor. (Mana ücretleri için)
-    if(v->size()==0){
-        for(int i = 0;i<5;i++){
+void setVectorSize(vector<int>* v) { //Vektör boşsa içine 5 tane 0 ekliyor. (Mana ücretleri için)
+    if (v->size() == 0) {
+        for (int i = 0; i < 5; i++) {
             v->push_back(0);
         }
     }
@@ -52,7 +66,6 @@ class Player {
 protected:
 
     bool hasWon;
-    int playerMana;
     int hp;
 
 public:
@@ -61,7 +74,6 @@ public:
     Player()
     {
         hp = 15;
-        playerMana = 0;
         hasWon = false;
         setVectorSize(&manaCount);
     }
@@ -70,23 +82,62 @@ public:
         return hasWon;
     }
 
-    int getMana()
-    {
-        return playerMana;
-    }
-
     int getHp()
     {
         return hp;
     }
 
-    int getLibraryElementCount() {
-        return library.size();
+    void setManaVector(string manaType)
+    {
+            if (manaType == "W")
+            {
+                manaCount[0]++;
+            }
+
+            else if (manaType == "G")
+            {
+                manaCount[1]++;
+            }
+            else if (manaType == "B")
+            {
+                manaCount[2]++;
+            }
+            else if (manaType == "R")
+            {
+                manaCount[3]++;
+            }
     }
 
-    void addMana(int mana)
+    void SetManaToZero()
+    {           //Oyunun turnlerinden birinde bütün kartlar untap oluyor, manayı sıfırlamak için.
+        for (int i = 0; i < manaCount.size(); i++)
+        {
+            manaCount[i] = 0;
+        }
+    }
+
+    void UntapAllinPlay()
     {
-        playerMana = mana;
+        for (int i = 0; i < inPlay.size(); i++)
+        {
+            (inPlay[i])->Untap();
+            
+            cout << "index: " << i << '\t';
+        }
+
+    }
+
+    void printManaVector()
+    {
+        for (int i = 0;i<5; i++)
+        {
+            cout << manaCount[i];
+        }
+        cout << endl;
+    }
+
+    int getLibraryElementCount() {
+        return library.size();
     }
 
     void addCardToDeck(shared_ptr<Card>& C1) {
@@ -95,27 +146,31 @@ public:
 
     void drawCard(shared_ptr<Card>& C1) {
         if (find(library.begin(), library.end(), C1) != library.end()) {
-            library.erase(remove(library.begin(), library.end(), C1), library.end());
             hand.push_back(C1);
+            library.erase(remove(library.begin(), library.end(), C1), library.end());
+           
         }
     }
     void addCardToinPlay(shared_ptr<Card>& C1)
     {
         if (find(hand.begin(), hand.end(), C1) != hand.end()) {
-            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
             inPlay.push_back(C1);
+            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
+           
         }
     }
 
     void addCardToDiscard(shared_ptr<Card>& C1)
     {
         if (find(hand.begin(), hand.end(), C1) != hand.end()) {
-            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
             discard.push_back(C1);
+            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
+           
         }
         else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
-            inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
             discard.push_back(C1);
+            inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
+            
         }
     }
 
@@ -124,57 +179,69 @@ public:
         library.erase(library.begin() + id);
     }
 
-    void checkManaCost(string s){ //Stringi gerekli olan mana ücretleri için vektöre çeviriyor
+    void checkManaCost(string s) { //Stringi gerekli olan mana ücretleri için vektöre çeviriyor
         vector<int> requiredMana;
         setVectorSize(&requiredMana);
-        for(int i = 0;i<s.length();i++){
-            if(isdigit(s[i])){
-                requiredMana[4]++;
-            } else {
-                if(s[i]=='W'){
+        for (int i = 0; i < s.length(); i++) {
+            if (isdigit(s[i])) {
+                requiredMana[4] += ((int)s[i] - 48);
+            }
+            else {
+                if (s[i] == 'W') {
                     requiredMana[0]++;
-                } if(s[i]=='G'){
+                } if (s[i] == 'G') {
                     requiredMana[1]++;
-                } if(s[i]=='B'){
+                } if (s[i] == 'B') {
                     requiredMana[2]++;
-                } if(s[i]=='R'){
+                } if (s[i] == 'R') {
                     requiredMana[3]++;
                 }
             }
         }
-        cout<<payMana(requiredMana)<<endl; //Denemek için print ediyor normalde etmeyecek satış işlemi olduysa 1 print ediyor.
+        cout << payMana(requiredMana) << endl; //Denemek için print ediyor normalde etmeyecek satış işlemi olduysa 1 print ediyor.
+           
+        for (int i = 0; i < requiredMana.size(); i++)
+        {
+            cout << requiredMana[i];
+        }
+        cout << endl;
+        
     }
-    bool payMana(vector<int> manaCost){ //Vektörü alıp paramız yetiyor mu diye kontrol ediyor.
+
+    bool payMana(vector<int> manaCost) { //Vektörü alıp paramız yetiyor mu diye kontrol ediyor.
         vector<int> manaAfterPayment;
         setVectorSize(&manaAfterPayment);
         bool status = true;
-        for(int i = 0;i<5;i++){
-            if(manaCount[i]<manaCost[i]){
-                if(i==4){
+        for (int i = 0; i < 5; i++) {                                                       
+            if (manaCount[i] < manaCost[i]) {
+                if (i == 4) {
                     int totalManaToUse = 0;
                     bool possibleToBuy = false;
-                    for(int x = 0;x<4;x++){
-                        if(totalManaToUse + manaAfterPayment[x] >= manaCount[i]){
-                            manaAfterPayment[x] = manaCount[i] - totalManaToUse;
+                    for (int x = 0; x < 4; x++) {
+                        if (totalManaToUse + manaAfterPayment[x] >= manaCost[i]) {
+                            manaAfterPayment[x] = manaCost[i] - totalManaToUse;
                             possibleToBuy = true;
-                        } else {
+                        }
+                        else {
                             totalManaToUse += manaAfterPayment[x];
                             manaAfterPayment[x] = 0;
                         }
                     }
-                    if(!possibleToBuy){
+                    if (!possibleToBuy) {
                         status = false;
                     }
-                } else {
+                }
+                else {
                     status = false;
                 }
-            } else {
+            }
+            else {
                 manaAfterPayment[i] = (manaCount[i] - manaCost[i]);
             }
         }
 
-        if(status == true){
-            for(int i = 0;i<manaAfterPayment.size();i++){
+        if (status == true) {
+            for (int i = 0; i < manaAfterPayment.size(); i++) {
                 manaCount[i] = manaAfterPayment[i];
             }
         }
@@ -200,6 +267,7 @@ public:
         {
             (inPlay[i])->printInfo();
             cout << '\t';
+            cout << "index: " << i << '\t';
         }
         cout << endl;
     }
@@ -215,29 +283,29 @@ public:
         cout << endl;
     }
 
-    void printLibrary()//test etmek için funtion, ileride silinecek.
+    void printLibrary()
     {
-        cout << "CARDS IN LIBRARY: " << endl;
+        //cout << "CARDS IN LIBRARY: " << endl;
         for (int i = 0; i < library.size(); i++)
         {
+            cout << "index: " << i << '\t';
             (library[i])->printInfo();
             cout << endl;
         }
 
     }
+    void activateAbility(int a)
+    {
+
+        inPlay[a]->Play();
+        
+    }
+
     void playItemAtHand(int a) {
-        //int index;
-        //if (a > 6)
-        //{
-        //    cout << "please enter a correct index";
-        //    cin >> index;
-        //    playItemAtHand(index);
-        //}
-
-        hand[a]->Play();
-
+      
         if (hand[a]->getType() == "Sorcery")
         {
+            hand[a]->Play();
             addCardToDiscard(hand[a]);
         }
         else
@@ -291,14 +359,25 @@ public:
     void Tap()
     {
         isTapped = true;
+    }
+
+    void Untap()
+    {
+        isTapped = false;
+        p1->SetManaToZero(); 
+    }
+    
+    void Play()
+    {   //player classında activate ile çağrılıyor.
+        Tap();
+
+        p1->setManaVector(getMana());
 
     }
-    void Play()
+
+    bool getStatus()
     {
-
-        p1->addMana(p1->getMana() + 1);
-        //shared_ptr<Card>LandPlayed = make_shared<LandCard>(name, type, mana, p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
-
+        return isTapped;
     }
 
     string getType()
@@ -306,7 +385,10 @@ public:
         return type;
     }
 
-
+    string getMana()
+    {
+        return mana;
+    }
 };
 
 class CreatureCard : public Card {
@@ -314,8 +396,8 @@ protected:
     int attackPower;
     int maxHP;
     int hp;
-    bool hasFirstStrike = false;
-    bool hasTrample = false;
+    bool hasFirstStrike;
+    bool hasTrample;
     string manaCost;
     string color;
     bool isTapped;
@@ -342,6 +424,17 @@ public:
         isDestroyed = false;
         this->p1 = p1;
 
+        if (name == "Angry Bear"||name=="Werewolf")
+        {
+            hasTrample = true;
+            hasFirstStrike = false;
+        }
+
+        else if (name == "White Knight" || name == "Black Knight")
+        {
+            hasFirstStrike = true;
+            hasTrample = false;
+        }
     }
     void attack() {
         hp = maxHP;
@@ -352,8 +445,7 @@ public:
     }
     void Play()
     {
-        //shared_ptr<Card>CreaturePlayed = make_shared<CreatureCard>(name, type, attackPower,manaCost,color,hp ,p1);//burası değişmeli sanırım, in play'e kart gitmiyor elden.
-        //p1->addCardToinPlay(CreaturePlayed);
+          //  attack() gibi bir şey olacak.
     }
 
     void printInfo()
@@ -365,7 +457,14 @@ public:
     {
         return type;
     }
-
+    string getManaCost()
+    {
+        return manaCost;
+    }
+    string getColor()
+    {
+        return color;
+    }
 
 };
 
@@ -395,12 +494,12 @@ public:
 
     void ActivateEnchantment()
     {
-
+        //Effect'i her neyse buraya girilecek.
     }
+
     void Play()
     {
-        /*    shared_ptr<Card>EnchantmentPlayed = make_shared<EnchantmentCard>(name, type, manaCost, color, p1, effect);
-            p1->addCardToinPlay(EnchantmentPlayed);*/
+        ActivateEnchantment();
 
     }
 
@@ -408,6 +507,17 @@ public:
     {
         return type;
     }
+
+    string getManaCost()
+    {
+        return manaCost;
+    }
+
+    void printInfo()
+    {
+        cout << name << " " << type << " " << manaCost << " " << color;
+    }
+
 };
 
 class SorceryCard : public Card {
@@ -434,19 +544,30 @@ public:
 
     void Play()
     {
-        //shared_ptr<Card>SorceryPlayed = make_shared<SorceryCard>(name, type, manaCost, color, p1, effect); //burası değişmeli, in play'e kart gitmiyor elden çünkü farklı bir obje..
-        //p1->addCardToDiscard(SorceryPlayed);//sorcery oynanınca discard'a gidiyor.
+        //activate ability. effect falan
+        cout << "sorcery is played" << endl;
     }
 
     string getType()
     {
         return type;
     }
+
+    string getManaCost()
+    {
+        return manaCost;
+    }
+    void printInfo()
+    {
+        cout << name << " " << type << " " << manaCost << " " << color;
+    }
+ 
 };
 
 void turnLoop() {
 
 }
+
 void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     Effect effect;
     shared_ptr<Player> player1;
@@ -599,33 +720,39 @@ void setupGame() {
 
     createDecks(p1, p2);
 
-    selectRandomCardsFromLibraryToPutIntoHand(p1);
-    selectRandomCardsFromLibraryToPutIntoHand(p2);
-
-    //p1->printLibrary();//bu fonksiyon kontrol için,kalkacak
-
-    p1->checkManaCost("1W"); //Denemek için
-
-    //burdan aşağısı loop'ta olucak tabii- biraz manuel denedim
-    cout << endl;
-    cout << "YOU HAVE: " << p1->getMana() << " MANA." << endl;
-
-    //p1->drawCard(p1->library[17]); //buralar tabi randomize olmalı. burada ilk item desteden çekiyorum
-    //p1->drawCard(p1->library[18]);
-    //p1->drawCard(p1->library[19]);//3 tane land çektim.
-    //p1->drawCard(p1->library[11]);
+    //selectRandomCardsFromLibraryToPutIntoHand(p1);
+    //selectRandomCardsFromLibraryToPutIntoHand(p2);
+    
+    p1->drawCard(p1->library[25]);
+    p1->drawCard(p1->library[18]);
+    p1->drawCard(p1->library[18]);
+    p1->drawCard(p1->library[10]);
 
     p1->printHand();
-    p1->printInplay();
+    p1->playItemAtHand(0);
 
-    //p1->playItemAtHand(3);//sorcery, discard pile'a gidiyor.
-    //p1->playItemAtHand(0);//land kart. in play'e gidiyor.
-
-    p1->printHand();
-    p1->printInplay();
+    p1->playItemAtHand(2);
     p1->printDiscard();
+    
 
-    cout << "YOU HAVE: " << p1->getMana() << " MANA." << endl;
+    //p1->printHand();
+
+    //p1->printManaVector();
+    //
+    //p1->activateAbility(0);
+    //p1->activateAbility(1);
+    //p1->activateAbility(2);
+
+
+    //p1->printManaVector();
+
+    //p1->checkManaCost("1WW");
+    //p1->UntapAllinPlay();
+
+    //cout << endl;
+    //p1->printManaVector();
+    //p1->checkManaCost("1WW");
+
     playGame();
 }
 int main() {
