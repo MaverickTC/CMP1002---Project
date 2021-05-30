@@ -73,6 +73,10 @@ public:
         return hp;
     }
 
+    int getLibraryElementCount(){
+        return library.size();
+    }
+
     void addMana(int mana)
     {
         playerMana = mana;
@@ -101,12 +105,15 @@ public:
         if (find(hand.begin(), hand.end(), C1) != hand.end()) {
             hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
             discard.push_back(C1);
-        }
-
-        else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
+        } else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
             inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
             discard.push_back(C1);
         }
+    }
+
+    void addCardToHandByInt(int id){
+        hand.push_back(library[id]);
+        library.erase(library.begin() + id);
     }
 
     void printHand()
@@ -175,6 +182,19 @@ public:
     }
 
 };
+
+void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1){
+    vector<int> possibleCards;
+    const int elementCount = p1->getLibraryElementCount();
+    for(int i = 0;i<p1->getLibraryElementCount();i++){
+        possibleCards.push_back(i);
+    }
+    srand(time(0));
+    for(int i = 0;i<5;i++){
+        int key = rand()%elementCount;
+        p1->addCardToHandByInt(key+1);
+    }
+}
 
 class Effect {
 
@@ -513,6 +533,10 @@ void setupGame() {
     shared_ptr<Player> p2 = make_shared<Player>();
 
     createDecks(p1, p2);
+
+    selectRandomCardsFromLibraryToPutIntoHand(p1);
+    selectRandomCardsFromLibraryToPutIntoHand(p2);
+
     p1->printLibrary();//bu fonksiyon kontrol için,kalkacak
 
     //burdan aşağısı loop'ta olucak tabii- biraz manuel denedim
@@ -521,10 +545,10 @@ void setupGame() {
   
   
 
-    p1->drawCard(p1->library[17]); //buralar tabi randomize olmalı. burada ilk item desteden çekiyorum
-    p1->drawCard(p1->library[18]);
-    p1->drawCard(p1->library[19]);//3 tane land çektim.
-    p1->drawCard(p1->library[11]);
+    //p1->drawCard(p1->library[17]); //buralar tabi randomize olmalı. burada ilk item desteden çekiyorum
+    //p1->drawCard(p1->library[18]);
+    //p1->drawCard(p1->library[19]);//3 tane land çektim.
+    //p1->drawCard(p1->library[11]);
 
     p1->printHand();
     p1->printInplay();
