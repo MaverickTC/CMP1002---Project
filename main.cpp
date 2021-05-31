@@ -8,6 +8,9 @@ protected:
     string name;
     string type;
     bool isTapped;
+    int hp;
+    int maxHP;
+
 public:
     Card()
     {
@@ -51,8 +54,30 @@ public:
 
     virtual void activateAbility(int a)
     {
-      
 
+    }
+    virtual int getHp()
+    {
+        return 1;
+    }
+
+    virtual int getMaxHP()
+    {
+        return 1;
+    }
+    virtual bool isDead()
+    {
+        return true;
+    }
+
+    virtual void setHp(int a)
+    {
+
+    }
+
+    virtual int getAttackPower()
+    {
+        return 1;
     }
 };
 void setVectorSize(vector<int>* v) { //Vektör boşsa içine 5 tane 0 ekliyor. (Mana ücretleri için)
@@ -85,6 +110,12 @@ public:
     int getHp()
     {
         return hp;
+    }
+
+    void setHp(int a)
+    {
+        hp = a;
+
     }
 
     void setManaVector(string manaType)
@@ -140,18 +171,18 @@ public:
         return library.size();
     }
 
-    void addCardToDeck(shared_ptr<Card>& C1) {
+    void addCardToDeck(shared_ptr<Card> &C1) {
         library.push_back(C1);
     }
 
-    void drawCard(shared_ptr<Card>& C1) {
+    void drawCard(shared_ptr<Card> &C1) {
         if (find(library.begin(), library.end(), C1) != library.end()) {
             hand.push_back(C1);
             library.erase(remove(library.begin(), library.end(), C1), library.end());
            
         }
     }
-    void addCardToinPlay(shared_ptr<Card>& C1)
+    void addCardToinPlay(shared_ptr<Card> &C1)
     {
         if (find(hand.begin(), hand.end(), C1) != hand.end()) {
             inPlay.push_back(C1);
@@ -338,6 +369,7 @@ protected:
     string mana;
     bool isTapped;
     std::shared_ptr<Player> p1;
+    bool isPlayed;
 
 public:
     LandCard(string name, string type, string mana, std::shared_ptr<Player> p1) :Card(name, type)
@@ -345,6 +377,7 @@ public:
         this->mana = mana;
         isTapped = false;
         this->p1 = p1;
+        isPlayed = true;
     }
     LandCard() :Card()
     {
@@ -370,7 +403,7 @@ public:
     void Play()
     {   //player classında activate ile çağrılıyor.
         Tap();
-
+        isPlayed = true;
         p1->setManaVector(getMana());
 
     }
@@ -388,6 +421,11 @@ public:
     string getMana()
     {
         return mana;
+    }
+
+    bool isAlreadyPlayed()
+    {
+        return isPlayed;
     }
 };
 
@@ -410,6 +448,7 @@ public:
         manaCost = "null cost";
         color = "no color";
         hp = 0;
+        maxHP = hp;
         isTapped = false;
         isDestroyed = false;
     }
@@ -420,6 +459,7 @@ public:
         this->manaCost = manaCost;
         this->color = color;
         this->hp = hp;
+        maxHP = hp;
         isTapped = false;
         isDestroyed = false;
         this->p1 = p1;
@@ -436,9 +476,55 @@ public:
             hasTrample = false;
         }
     }
-    void attack() {
+
+    void attack(std::shared_ptr<Player> p2) {
+
         hp = maxHP;
+
+        //if no defenders,
+
+        p2->setHp(p2->getHp() - attackPower);
+
+        //if defenders
+
     }
+
+
+    int getHp()
+    {
+        return hp;
+    }
+
+    int getMaxHP()
+    {
+        return maxHP;
+    }
+
+    int getAttackPower()
+    {
+        return attackPower;
+    }
+
+    bool isDead()
+    {
+        if (hp <= 0)
+        {
+            isDestroyed = true;
+        }
+        else
+        {
+            isDestroyed = false;
+        }
+
+        return isDestroyed;
+    }
+
+
+    void setHp(int a)
+    {
+        hp = a;
+    }
+
     void Tap()
     {
         isTapped = true;
@@ -702,6 +788,47 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
 }
 
 
+void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>&attakingPlayer,  shared_ptr<Card> defendingCreature,shared_ptr<Player >&defendingPlayer)
+{
+
+    
+    if (defendingCreature == nullptr)
+    {
+        //eğer savunan yartık yoksa nullptr, daha iyi yol varsa bilemedim
+        attackingCreature->setHp(attackingCreature->getMaxHP());
+        defendingPlayer->setHp(defendingPlayer->getHp() - attackingCreature->getAttackPower());
+
+
+        cout << "defending player has " << defendingPlayer->getHp() << "hp left" << endl;
+    }
+
+
+    else {
+        attackingCreature->setHp(attackingCreature->getMaxHP());
+        defendingCreature->setHp(defendingCreature->getMaxHP());
+
+        defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
+
+        attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
+
+        if (defendingCreature->isDead())
+        {
+            cout << "defender died." << endl;
+            defendingPlayer->addCardToDiscard(defendingCreature);//burası çalışmıyor nedense
+        }
+
+        if (attackingCreature->isDead())
+        {
+            cout << "attacker died." << endl;
+            attakingPlayer->addCardToDiscard(attackingCreature);//burası da
+        }
+        
+   
+
+    }
+
+}
+
 int turn = 0;
 void playGame() {
     bool isGameFinished = false;
@@ -723,16 +850,21 @@ void setupGame() {
     //selectRandomCardsFromLibraryToPutIntoHand(p1);
     //selectRandomCardsFromLibraryToPutIntoHand(p2);
     
-    p1->drawCard(p1->library[25]);
-    p1->drawCard(p1->library[18]);
-    p1->drawCard(p1->library[18]);
-    p1->drawCard(p1->library[10]);
+    p1->drawCard(p1->library[5]);
+    p2->drawCard(p2->library[0]);
+    
+   
 
     p1->printHand();
-    p1->playItemAtHand(0);
+    p2->printHand();
 
-    p1->playItemAtHand(2);
+
+    combat(p2->library[5], p2, NULL, p1);
+    //combat(p2->library[5], p2, p1->library[0], p1);
+
+    p2->printDiscard();
     p1->printDiscard();
+    cout<<p1->getHp();
     
 
     //p1->printHand();
