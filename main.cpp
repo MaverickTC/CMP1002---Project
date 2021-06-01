@@ -205,12 +205,10 @@ public:
             library.erase(remove(library.begin(), library.end(), C1), library.end());
         }
     }
-    void addCardToinPlay(shared_ptr<Card> &C1)
+    void addCardToinPlay(int a)
     {
-        if (find(hand.begin(), hand.end(), C1) != hand.end()) {
-            inPlay.push_back(C1);
-            hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
-        }
+        inPlay.push_back(hand[a]);
+        hand.erase(hand.begin() + a);
     }
 
     void addCardToDiscard(shared_ptr<Card>& C1)
@@ -363,6 +361,42 @@ public:
         return library[selection];
     }
 
+    shared_ptr<Card> getAndPrintHandVector(){
+        cout << "Please enter an index number to play land card." << endl;
+        for (int i = 0; i < hand.size(); i++)
+        {
+            cout << "Index:" << i << " " << hand[i]->getName() << " ";
+        }
+        int selection=-1;
+        while(selection<0||selection>=hand.size()){
+            cout << "Please enter a valid number" << endl;
+            cin >> selection;
+        }
+        return hand[selection];
+    }
+
+    void tapSelectedLandCards(){
+        vector<shared_ptr<Card>> landCards;
+        //cout << hand.size() << endl;
+        int i = 0, number=0;
+
+        while(i<hand.size())
+        {
+            if(hand[i]->getType()=="Land"){
+                cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                landCards.push_back(hand[i]);
+                number++;
+            }
+            i++;
+        }
+        int selection=-1;
+        while((selection>=0&&selection<landCards.size() || selection == -1)){
+            cout << "Please enter an index number to tap card or enter -1 to skip." << endl;
+            cin >> selection;
+            landCards[selection]->Tap();
+        }
+    }
+
     void activateAbility(int a)
     {
 
@@ -370,16 +404,23 @@ public:
 
     }
 
-    void playItemAtHand(int a) {
+    void playItemAtHand(shared_ptr<Card> &C1)
+    {
+        auto it = find(hand.begin(), hand.end(), C1);
 
-        if (hand[a]->getType() == "Sorcery")
+        if (it != hand.end())
         {
-            hand[a]->Play();
-            addCardToDiscard(hand[a]);
-        }
-        else
-        {
-            addCardToinPlay(hand[a]);
+            int index = it - hand.begin();
+
+            if (hand[index]->getType() == "Sorcery")
+            {
+                hand[index]->Play();
+                addCardToDiscard(hand[index]);
+            }
+            else
+            {
+                addCardToinPlay(index);
+            }
         }
     }
 
@@ -455,7 +496,6 @@ public:
         Tap();
         isPlayed = true;
         p1->setManaVector(getMana());
-
     }
 
     bool getStatus()
@@ -706,24 +746,50 @@ void turnLoop() {
     } else if(turn==1){
         ourPlayer = p2;
     }
-    //Draw
+
+    ////Draw
     shared_ptr<Card> selection;
-    cout <<ourPlayer->getHandElementCount() << endl;
-    if(ourPlayer->getHandElementCount()<7){
-        selection = (ourPlayer->getAndPrintLibraryVector());
-        ourPlayer->drawCard(selection);
+
+    //cout <<ourPlayer->getHandElementCount() << endl;
+
+    if(ourPlayer->getLibraryElementCount()>0){
+        if(ourPlayer->getHandElementCount()<7){
+            selection = (ourPlayer->getAndPrintLibraryVector());
+            ourPlayer->drawCard(selection);
+        } else {
+
+        }
     } else {
         //Lose The Game
         isGameFinished = true;
     }
 
-    //Untap
+    ////Untap
     ourPlayer->untapAllinPlay();
 
-    //Play
+    ////Play
+    cout << "Do you want to play a land card? (Y/N)" << endl;
+    string answer;
+    cin >> answer;
 
+    if(answer=="Y" || answer=="y"){
+        selection = (ourPlayer->getAndPrintHandVector());
+        ourPlayer->playItemAtHand(selection);
+    }
 
+    cout << "Enter an index number to play non land card or enter -1 to skip." << endl;
 
+    int index=0;
+    do {
+        cin >> index;
+
+        selection = (ourPlayer->getAndPrintHandVector());
+        ourPlayer->playItemAtHand(selection);
+    }
+    while (index!=-1);
+
+    ////Tap
+    ourPlayer->tapSelectedLandCards();
 }
 
 void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
