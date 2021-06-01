@@ -164,15 +164,14 @@ public:
         }
     }
 
-    void UntapAllinPlay()
+    void untapAllinPlay()
     {
         for (int i = 0; i < inPlay.size(); i++)
         {
             (inPlay[i])->Untap();
-            
+
             cout << "index: " << i << '\t';
         }
-
     }
 
     void printManaVector()
@@ -188,6 +187,10 @@ public:
         return library.size();
     }
 
+    int getHandElementCount() {
+        return hand.size();
+    }
+
     void addCardToDeck(shared_ptr<Card> &C1) {
         library.push_back(C1);
     }
@@ -196,7 +199,6 @@ public:
         if (find(library.begin(), library.end(), C1) != library.end()) {
             hand.push_back(C1);
             library.erase(remove(library.begin(), library.end(), C1), library.end());
-           
         }
     }
     void addCardToinPlay(shared_ptr<Card> &C1)
@@ -204,7 +206,6 @@ public:
         if (find(hand.begin(), hand.end(), C1) != hand.end()) {
             inPlay.push_back(C1);
             hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
-           
         }
     }
 
@@ -213,12 +214,12 @@ public:
         if (find(hand.begin(), hand.end(), C1) != hand.end()) {
             discard.push_back(C1);
             hand.erase(remove(hand.begin(), hand.end(), C1), hand.end());
-           
+
         }
         else if (find(inPlay.begin(), inPlay.end(), C1) != inPlay.end()) {
             discard.push_back(C1);
             inPlay.erase(remove(inPlay.begin(), inPlay.end(), C1), inPlay.end());
-            
+
         }
     }
 
@@ -247,20 +248,20 @@ public:
             }
         }
         cout << payMana(requiredMana) << endl; //Denemek için print ediyor normalde etmeyecek satış işlemi olduysa 1 print ediyor.
-           
+
         for (int i = 0; i < requiredMana.size(); i++)
         {
             cout << requiredMana[i];
         }
         cout << endl;
-        
+
     }
 
     bool payMana(vector<int> manaCost) { //Vektörü alıp paramız yetiyor mu diye kontrol ediyor.
         vector<int> manaAfterPayment;
         setVectorSize(&manaAfterPayment);
         bool status = true;
-        for (int i = 0; i < 5; i++) {                                                       
+        for (int i = 0; i < 5; i++) {
             if (manaCount[i] < manaCost[i]) {
                 if (i == 4) {
                     int totalManaToUse = 0;
@@ -340,18 +341,31 @@ public:
             (library[i])->printInfo();
             cout << endl;
         }
+    }
 
+    shared_ptr<Card> getAndPrintLibraryVector(){
+        cout << "Please enter an index number to draw a card." << endl;
+        for (int i = 0; i < library.size(); i++)
+        {
+            cout << "Index:" << i << " " << library[i]->getName() << " ";
+        }
+        int selection=-1;
+        while(selection<0||selection>=library.size()){
+            cout << "Please enter a valid number" << endl;
+            cin >> selection;
+        }
+        return library[selection];
     }
 
     void activateAbility(int a)
     {
 
         inPlay[a]->Play();
-        
+
     }
 
     void playItemAtHand(int a) {
-      
+
         if (hand[a]->getType() == "Sorcery")
         {
             hand[a]->Play();
@@ -371,7 +385,7 @@ public:
             {
                 inPlay[i]->setHp(inPlay[i]->getMaxHP());
             }
-            
+
         }
     }
 
@@ -427,9 +441,9 @@ public:
     void Untap()
     {
         isTapped = false;
-        p1->SetManaToZero(); 
+        p1->SetManaToZero();
     }
-    
+
     void Play()
     {   //player classında activate ile çağrılıyor.
         Tap();
@@ -674,17 +688,42 @@ public:
     {
         cout << name << " " << type << " " << manaCost << " " << color;
     }
- 
-};
 
+};
+int turn = 0;
+shared_ptr<Player> p1, p2;
+bool isGameFinished = false;
 void turnLoop() {
+    shared_ptr<Player> ourPlayer;
+    if(turn==0){
+        ourPlayer = p1;
+    } else if(turn==1){
+        ourPlayer = p2;
+    }
+    //Draw
+    shared_ptr<Card> selection;
+    cout <<ourPlayer->getHandElementCount() << endl;
+    if(ourPlayer->getHandElementCount()<7){
+        selection = (ourPlayer->getAndPrintLibraryVector());
+        ourPlayer->drawCard(selection);
+    } else {
+        //Lose The Game
+        isGameFinished = true;
+    }
+
+    //Untap
+    ourPlayer->untapAllinPlay();
+
+    //Play
+
+
 
 }
 
 void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     Effect effect;
     shared_ptr<Player> player1;
-    shared_ptr<Player>player2;
+    shared_ptr<Player> player2;
     player1 = p1;
     player2 = p2;
 
@@ -905,7 +944,7 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
     else if (attackingCreature->getHasTrample() == true)
     {
         //attacking'de trample varsa.
-       
+
         int excess_damage;
 
         excess_damage = attackingCreature->getAttackPower() - defendingCreature->getHp();
@@ -954,31 +993,30 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 
 }
 
-int turn = 0;
+
 void playGame() {
-    bool isGameFinished = false;
+
     while (!isGameFinished) {
         turnLoop();
         turn = (turn == 0) ? turn = 1 : turn = 0;
-
         isGameFinished = true;
 
     }
 }
 
 void setupGame() {
-    shared_ptr<Player> p1 = make_shared<Player>();
-    shared_ptr<Player> p2 = make_shared<Player>();
+    p1 = make_shared<Player>();
+    p2 = make_shared<Player>();
 
     createDecks(p1, p2);
 
-    //selectRandomCardsFromLibraryToPutIntoHand(p1);
-    //selectRandomCardsFromLibraryToPutIntoHand(p2);
-   
+    selectRandomCardsFromLibraryToPutIntoHand(p1);
+    selectRandomCardsFromLibraryToPutIntoHand(p2);
+
     //trample
     //p1->drawCard(p1->library[0]);
     //p2->drawCard(p2->library[7]);
-    
+
     //firststrike
     //p1->drawCard(p1->library[7]);
     //p2->drawCard(p2->library[5]);
@@ -997,27 +1035,27 @@ void setupGame() {
     p1->printHand();
 
    // combat(p2->library[5], p2, NULL, p1);
-    combat(p2->hand[0], p2, p1->hand[0], p1);
+    //combat(p2->hand[0], p2, p1->hand[0], p1);
 
-    cout << endl;
-
-
+    //cout << endl;
 
 
-    cout << "discard pile of p1: " << endl;
-    p1->printDiscard();
-
-    cout << "discard pile of p2: " << endl;
-    p2->printDiscard();
 
 
-    cout <<"p1 remaining health: ";
-    cout << p1->getHp() << endl;
+    //cout << "discard pile of p1: " << endl;
+    //p1->printDiscard();
 
-    cout << "p2 remaining health: ";
-    cout << p2->getHp() << endl;
+    //cout << "discard pile of p2: " << endl;
+    //p2->printDiscard();
 
-  
+
+    //cout <<"p1 remaining health: ";
+    //cout << p1->getHp() << endl;
+
+    //cout << "p2 remaining health: ";
+    //cout << p2->getHp() << endl;
+
+
     //p1->printManaVector();
     //
     //p1->activateAbility(0);
@@ -1028,7 +1066,7 @@ void setupGame() {
     //p1->printManaVector();
 
     //p1->checkManaCost("1WW");
-    //p1->UntapAllinPlay();
+    //p1->untapAllinPlay();
 
     //cout << endl;
     //p1->printManaVector();
