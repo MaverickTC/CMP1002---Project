@@ -112,7 +112,7 @@ protected:
 
 public:
     vector<shared_ptr<Card>> library, hand, inPlay, discard;
-    vector<int> manaCount; //White, Green, Black, Red, Colorless
+    vector<int> manaCount; //White, Green, Black, Red, Blue, Colorless
     Player()
     {
         hp = 15;
@@ -233,7 +233,7 @@ public:
         setVectorSize(&requiredMana);
         for (int i = 0; i < s.length(); i++) {
             if (isdigit(s[i])) {
-                requiredMana[4] += ((int)s[i] - 48);
+                requiredMana[5] += ((int)s[i] - 48);
             }
             else {
                 if (s[i] == 'W') {
@@ -244,6 +244,8 @@ public:
                     requiredMana[2]++;
                 } if (s[i] == 'R') {
                     requiredMana[3]++;
+                } if (s[i] == 'R') {
+                    requiredMana[4]++;
                 }
             }
         }
@@ -261,12 +263,12 @@ public:
         vector<int> manaAfterPayment;
         setVectorSize(&manaAfterPayment);
         bool status = true;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             if (manaCount[i] < manaCost[i]) {
-                if (i == 4) {
+                if (i == 5) {
                     int totalManaToUse = 0;
                     bool possibleToBuy = false;
-                    for (int x = 0; x < 4; x++) {
+                    for (int x = 0; x < 5; x++) {
                         if (totalManaToUse + manaAfterPayment[x] >= manaCost[i]) {
                             manaAfterPayment[x] = manaCost[i] - totalManaToUse;
                             possibleToBuy = true;
