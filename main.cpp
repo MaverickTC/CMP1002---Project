@@ -154,6 +154,10 @@ public:
             {
                 manaCount[3]++;
             }
+             else if (manaType == "L")
+            {
+                manaCount[4]++;
+            }
     }
 
     void SetManaToZero()
@@ -244,7 +248,7 @@ public:
                     requiredMana[2]++;
                 } if (s[i] == 'R') {
                     requiredMana[3]++;
-                } if (s[i] == 'R') {
+                } if (s[i] == 'L') {
                     requiredMana[4]++;
                 }
             }
