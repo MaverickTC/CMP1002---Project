@@ -668,7 +668,7 @@ public:
             }
             cards.empty();
         }
-        }
+        
     }
 };
 
@@ -1063,8 +1063,6 @@ public: void use(shared_ptr<Card>& C) {
             }
         }
     };
-
-
 
     class LandCard : public Card {
     protected:
