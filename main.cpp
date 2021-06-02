@@ -362,17 +362,25 @@ public:
     }
 
     shared_ptr<Card> getAndPrintHandVector(){
-        cout << "Please enter an index number to play land card." << endl;
-        for (int i = 0; i < hand.size(); i++)
+        int i = 0, number = 0;
+        vector<shared_ptr<Card>> landCards;
+
+        while (i < hand.size())
         {
-            cout << "Index:" << i << " " << hand[i]->getName() << " ";
+            if (hand[i]->getType() == "Land") {
+                cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                landCards.push_back(hand[i]);
+                number++;
+            }
+            i++;
         }
-        int selection=-1;
-        while(selection<0||selection>=hand.size()){
-            cout << "Please enter a valid number" << endl;
+
+        int selection = -1;
+        while (selection < 0 || selection >= landCards.size()) {
+            cout << "Please enter an index number to tap card or enter -1 to skip" << endl;
             cin >> selection;
         }
-        return hand[selection];
+        return landCards[selection];
     }
 
     void tapSelectedLandCards(){
@@ -440,18 +448,102 @@ public:
 
 void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1) {
     vector<int> possibleCards;
-    const int elementCount = p1->getLibraryElementCount();
+   
     for (int i = 0; i < p1->getLibraryElementCount(); i++) {
         possibleCards.push_back(i);
     }
     srand(time(0));
     for (int i = 0; i < 5; i++) {
-        int key = rand() % elementCount;
-        p1->addCardToHandByInt(key + 1);
+        int key = rand() % p1->getLibraryElementCount();
+
+        p1->addCardToHandByInt(key);
     }
 }
 
 class Effect {
+
+};
+
+class Effect {
+protected:string effectName;
+public:
+
+    Effect(string effectName)
+{
+        this->effectName = effectName;
+}
+    Effect()
+    {
+
+    }
+
+
+
+};
+
+class DestroyCreatureEffect : Effect {
+
+public:
+    DestroyCreatureEffect(string effectName) :Effect(effectName)
+    {
+
+    }
+      void destroyCreature(shared_ptr<Card>& C1)
+      {
+          C1->isDead() == true;
+
+          //send to discard //player'a send dead cards to discard pile ekleyebiliriz.?
+      }
+
+
+};
+
+class DestroyLandEffect : Effect {
+
+
+
+
+};
+
+class DestroyEnchantmentEffect : Effect {
+
+
+
+
+};
+
+class DealDamageEffect : Effect {
+
+
+
+
+};
+
+class ReturnCreatureToLifeEffect : Effect {
+
+
+
+
+};
+
+class GainTrampleEffect : Effect {
+
+
+
+};
+
+class LoseTrampleEffect : Effect {
+
+
+};
+
+class GainStatsEffect : Effect {
+
+
+};
+
+class LoseFirstStrikeEffect : Effect {
+
 
 };
 
