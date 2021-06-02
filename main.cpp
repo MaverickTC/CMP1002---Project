@@ -1,6 +1,25 @@
 #include <iostream>
 #include <vector>
 
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"      /* Black */
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define BLUE    "\033[34m"      /* Blue */
+#define MAGENTA "\033[35m"      /* Magenta */
+#define CYAN    "\033[36m"      /* Cyan */
+#define WHITE   "\033[37m"      /* White */
+#define BOLDBLACK   "\033[1m\033[30m"      /* Bold Black */
+#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
+#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
+#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
+#define BOLDBLUE    "\033[1m\033[34m"      /* Bold Blue */
+#define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
+#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
+#define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
+
+
 using namespace std;
 
 class Card {
@@ -348,39 +367,59 @@ public:
     }
 
     shared_ptr<Card> getAndPrintLibraryVector(){
-        cout << "Please enter an index number to draw a card." << endl;
         for (int i = 0; i < library.size(); i++)
         {
             cout << "Index:" << i << " " << library[i]->getName() << " ";
         }
+        cout << endl;
         int selection=-1;
         while(selection<0||selection>=library.size()){
-            cout << "Please enter a valid number" << endl;
+            cout << "Please enter a valid index number to draw a card." << endl;
             cin >> selection;
         }
         return library[selection];
     }
 
-    shared_ptr<Card> getAndPrintHandVector(){
+    shared_ptr<Card> getAndPrintHandVector(bool isLand){
         int i = 0, number = 0;
-        vector<shared_ptr<Card>> landCards;
+        vector<shared_ptr<Card>> cards;
 
         while (i < hand.size())
         {
-            if (hand[i]->getType() == "Land") {
-                cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
-                landCards.push_back(hand[i]);
-                number++;
+            if(isLand){
+                if (hand[i]->getType() == "Land") {
+                    cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                    cards.push_back(hand[i]);
+                    number++;
+                }
+            } else {
+                if (hand[i]->getType() != "Land") {
+                    cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                    cards.push_back(hand[i]);
+                    number++;
+                }
             }
+
             i++;
         }
 
         int selection = -1;
-        while (selection < 0 || selection >= landCards.size()) {
-            cout << "Please enter an index number to tap card or enter -1 to skip" << endl;
+        string str="";
+        bool stop = false;
+        str = (isLand) ? str = " land " : " non land ";
+        while (selection < 0 || selection >= cards.size()) {
+            cout << "Please enter an index number to play" << str << "card or enter -1 to skip" << endl;
             cin >> selection;
+            if(selection==-1){
+                stop = true;
+                break;
+            }
         }
-        return landCards[selection];
+        if(stop && !isLand){
+            return nullptr;
+        } else {
+            return cards[selection];
+        }
     }
 
     void tapSelectedLandCards(){
@@ -460,9 +499,6 @@ void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1) {
     }
 }
 
-class Effect {
-
-};
 
 class Effect {
 protected:string effectName;
@@ -840,6 +876,7 @@ void turnLoop() {
     }
 
     ////Draw
+    cout << GREEN << "Draw Phase" << RESET << endl;
     shared_ptr<Card> selection;
 
     //cout <<ourPlayer->getHandElementCount() << endl;
@@ -860,25 +897,24 @@ void turnLoop() {
     ourPlayer->untapAllinPlay();
 
     ////Play
-    cout << "Do you want to play a land card? (Y/N)" << endl;
+    cout << GREEN << "Do you want to play a land card? (Y/N)" << RESET << endl;
     string answer;
     cin >> answer;
 
     if(answer=="Y" || answer=="y"){
-        selection = (ourPlayer->getAndPrintHandVector());
+        selection = (ourPlayer->getAndPrintHandVector(true));
         ourPlayer->playItemAtHand(selection);
     }
 
-    cout << "Enter an index number to play non land card or enter -1 to skip." << endl;
-
-    int index=0;
-    do {
-        cin >> index;
-
-        selection = (ourPlayer->getAndPrintHandVector());
-        ourPlayer->playItemAtHand(selection);
+    bool stop = false;
+    while(!stop) {
+        selection = (ourPlayer->getAndPrintHandVector(false));
+        if(selection== nullptr){
+            stop = true;
+        } else {
+            ourPlayer->playItemAtHand(selection);
+        }
     }
-    while (index!=-1);
 
     ////Tap
     ourPlayer->tapSelectedLandCards();
