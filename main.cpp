@@ -22,11 +22,14 @@
 
 using namespace std;
 
+
+
 class Card {
 protected:
     string name;
     string type;
     bool isTapped;
+    bool isDestroyed;
     int hp;
     int maxHP;
     bool hasFirstStrike;
@@ -37,6 +40,7 @@ public:
         name = "no name";
         type = "null type";
         isTapped = false;
+        isDestroyed = false;
     }
 
     Card(string name, string type)
@@ -44,6 +48,7 @@ public:
         this->name = name;
         this->type = type;
         isTapped = false;
+        isDestroyed = false;
     }
 
     virtual void Play() = 0;
@@ -60,6 +65,24 @@ public:
     virtual void Untap()
     {
         isTapped = false;
+    }
+
+    bool isDead()
+    {
+        if (hp <= 0)
+        {
+            isDestroyed = true;
+        }
+        else
+        {
+            isDestroyed = false;
+        }
+
+        return isDestroyed;
+    }
+
+    void destroyCard(){
+        isDestroyed = true;
     }
 
     virtual void printInfo()
@@ -84,10 +107,6 @@ public:
     virtual int getMaxHP()
     {
         return 1;
-    }
-    virtual bool isDead()
-    {
-        return true;
     }
 
     virtual void setHp(int a)
@@ -366,6 +385,8 @@ public:
         }
     }
 
+
+
     shared_ptr<Card> getAndPrintLibraryVector(){
         for (int i = 0; i < library.size(); i++)
         {
@@ -423,6 +444,8 @@ public:
         }
     }
 
+
+
     void tapSelectedLandCards(){
         vector<shared_ptr<Card>> landCards;
         //cout << hand.size() << endl;
@@ -438,7 +461,7 @@ public:
             i++;
         }
         int selection=-1;
-        while((selection>=0&&selection<landCards.size() || selection == -1)){
+        while((selection>=0&&selection<landCards.size()) || selection == -1){
             cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
             cin >> selection;
             if(!(selection>=0&&selection<landCards.size())){
@@ -504,88 +527,98 @@ void selectRandomCardsFromLibraryToPutIntoHand(std::shared_ptr<Player> p1) {
     }
 }
 
+int turn = 0;
+shared_ptr<Player> p1, p2;
 
 class Effect {
-protected:string effectName;
+    virtual void use()=0;
+};
+
+class DestroyEffect : Effect {
 public:
+    void use(){
 
-    Effect(string effectName)
-{
-        this->effectName = effectName;
-}
-    Effect()
-    {
+        shared_ptr<Player> targetPlayer;
+        vector<shared_ptr<Card>> cards;
+        if(turn == 0){
+            targetPlayer = p2;
+        } else {
+            targetPlayer = p1;
+        }
+        if(targetPlayer->inPlay.size()<1){
+            return;  //Eğer inPlay boşsa soruya gerek yok.
+        }
+        int i=0, number=0;
+        while(i<targetPlayer->inPlay.size())
+        {
+            if(targetPlayer->inPlay[i]->getType()=="Creature") {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                targetPlayer->inPlay[i]->printInfo();
+                cards.push_back(targetPlayer->inPlay[i]);
+                number++;
+            }
+            i++;
+        }
 
+        int selection=-1;
+        while((selection>=0&&selection<cards.size()) || selection == -1){
+            cout << BOLDMAGENTA << "Please enter an index number to destroy card of your rival." << RESET << endl;
+            cin >> selection;
+            if(!(selection>=0&&selection<cards.size())){
+                targetPlayer->inPlay[i]->destroyCard();
+            } else {
+                return;
+            }
+        }
     }
-
-
-
 };
 
-class DestroyCreatureEffect : Effect {
-
-public:
-    DestroyCreatureEffect(string effectName) :Effect(effectName)
-    {
-
-    }
-      void destroyCreature(shared_ptr<Card>& C1)
-      {
-          C1->isDead() == true;
-
-          //send to discard //player'a send dead cards to discard pile ekleyebiliriz.?
-      }
-
-
-};
-
-class DestroyLandEffect : Effect {
-
-
-
-
-};
-
-class DestroyEnchantmentEffect : Effect {
-
-
-
-
-};
 
 class DealDamageEffect : Effect {
+    void use(){
 
+    }
 
 
 
 };
 
 class ReturnCreatureToLifeEffect : Effect {
+    void use(){
 
+    }
 
 
 
 };
 
 class GainTrampleEffect : Effect {
+    void use(){
 
+    }
 
 
 };
 
 class LoseTrampleEffect : Effect {
+    void use(){
 
+    }
 
 };
 
 class GainStatsEffect : Effect {
+    void use(){
 
+    }
 
 };
 
 class LoseFirstStrikeEffect : Effect {
 
+    void use(){
 
+    }
 };
 
 class LandCard : public Card {
@@ -662,7 +695,6 @@ protected:
     string manaCost;
     string color;
     bool isTapped;
-    bool isDestroyed;
     std::shared_ptr<Player> p1;
 public:
 
@@ -673,7 +705,6 @@ public:
         hp = 0;
         maxHP = hp;
         isTapped = false;
-        isDestroyed = false;
     }
 
     CreatureCard(string name, string type, int attackPower, string manaCost, string color, int hp, std::shared_ptr<Player> p1) :Card(name, type)
@@ -684,7 +715,6 @@ public:
         this->hp = hp;
         maxHP = hp;
         isTapped = false;
-        isDestroyed = false;
         this->p1 = p1;
 
         if (name == "Angry Bear"||name=="Werewolf")
@@ -713,20 +743,6 @@ public:
     int getAttackPower()
     {
         return attackPower;
-    }
-
-    bool isDead()
-    {
-        if (hp <= 0)
-        {
-            isDestroyed = true;
-        }
-        else
-        {
-            isDestroyed = false;
-        }
-
-        return isDestroyed;
     }
 
 
@@ -778,7 +794,6 @@ class EnchantmentCard : public Card {
 protected:
     string manaCost;
     string color;
-    Effect effect;
     std::shared_ptr<Player> p1;
 public:
 
@@ -788,12 +803,11 @@ public:
         color = "no color";
     }
 
-    EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect& effect) :Card(name, type)
+    EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1) :Card(name, type)
     {
 
         this->manaCost = manaCost;
         this->color = color;
-        this->effect = effect;
         this->p1 = p1;
 
     }
@@ -830,16 +844,14 @@ class SorceryCard : public Card {
 protected:
     string manaCost;
     string color;
-    Effect effect;
 
 public:
     std::shared_ptr<Player> p1;
-    SorceryCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect& effect) :Card(name, type)
+    SorceryCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1) :Card(name, type)
     {
 
         this->manaCost = manaCost;
         this->color = color;
-        this->effect = effect;
         this->p1 = p1;
     }
     SorceryCard() :Card()
@@ -869,8 +881,7 @@ public:
     }
 
 };
-int turn = 0;
-shared_ptr<Player> p1, p2;
+
 bool isGameFinished = false;
 void turnLoop() {
     shared_ptr<Player> ourPlayer;
@@ -921,12 +932,15 @@ void turnLoop() {
         }
     }
 
+
+    DestroyEffect d;
+    d.use();
+
     ////Tap
     ourPlayer->tapSelectedLandCards();
 }
 
 void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
-    Effect effect;
     shared_ptr<Player> player1;
     shared_ptr<Player> player2;
     player1 = p1;
@@ -945,15 +959,15 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     shared_ptr<Card>C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player1);
 
     ////Sorcery Cards
-    shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1, effect);
-    shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1, effect);
-    shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, effect);
-    shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, effect);
+    shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1);
+    shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1);
+    shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1);
+    shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1);
 
     ////Enchantment Cards
-    shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1, effect);
-    shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1, effect);
-    shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "White", "1W", player1, effect);
+    shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1);
+    shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1);
+    shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "White", "1W", player1);
 
     //Land Cards
     shared_ptr<Card>C18 = make_shared<LandCard>("Plains", "Land", "W", player1);
@@ -1008,15 +1022,15 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player2);
 
     //Sorcery Cards
-    C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2, effect);
-    C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2, effect);
-    C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, effect);
-    C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, effect);
+    C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2);
+    C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2);
+    C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2);
+    C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2);
 
     //Enchantment Card
-    C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2, effect);
-    C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2, effect);
-    C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2, effect);
+    C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2);
+    C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2);
+    C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2);
 
     //Land Card
     C18 = make_shared<LandCard>("Swamp", "Land", "B", player2);
