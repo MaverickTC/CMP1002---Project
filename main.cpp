@@ -369,12 +369,12 @@ public:
     shared_ptr<Card> getAndPrintLibraryVector(){
         for (int i = 0; i < library.size(); i++)
         {
-            cout << "Index:" << i << " " << library[i]->getName() << " ";
+            cout << BOLDRED << "Index:" << i << " " << RESET << library[i]->getName() << " ";
         }
         cout << endl;
         int selection=-1;
         while(selection<0||selection>=library.size()){
-            cout << "Please enter a valid index number to draw a card." << endl;
+            cout << BOLDMAGENTA << "Please enter a valid index number to draw a card." << RESET << endl;
             cin >> selection;
         }
         return library[selection];
@@ -388,13 +388,13 @@ public:
         {
             if(isLand){
                 if (hand[i]->getType() == "Land") {
-                    cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                    cout << BOLDRED << "Index:" << number << " " << RESET << hand[i]->getName() << " " << endl;
                     cards.push_back(hand[i]);
                     number++;
                 }
             } else {
                 if (hand[i]->getType() != "Land") {
-                    cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                    cout << BOLDRED << "Index:" << number << " " << RESET << hand[i]->getName() << " " << endl;
                     cards.push_back(hand[i]);
                     number++;
                 }
@@ -408,10 +408,11 @@ public:
         bool stop = false;
         str = (isLand) ? str = " land " : " non land ";
         while (selection < 0 || selection >= cards.size()) {
-            cout << "Please enter an index number to play" << str << "card or enter -1 to skip" << endl;
+            cout << BOLDMAGENTA << "Please enter an index number to play" << str << "card or enter -1 to skip" << RESET << endl;
             cin >> selection;
             if(selection==-1){
                 stop = true;
+                selection = 0; //Daha iyi bir yol bulunabilir.
                 break;
             }
         }
@@ -430,7 +431,7 @@ public:
         while(i<hand.size())
         {
             if(hand[i]->getType()=="Land"){
-                cout << "Index:" << number << " " << hand[i]->getName() << " " << endl;
+                cout << BOLDRED << "Index:" << number << " " << RESET << hand[i]->getName() << " " << endl;
                 landCards.push_back(hand[i]);
                 number++;
             }
@@ -438,9 +439,13 @@ public:
         }
         int selection=-1;
         while((selection>=0&&selection<landCards.size() || selection == -1)){
-            cout << "Please enter an index number to tap card or enter -1 to skip." << endl;
+            cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
             cin >> selection;
-            landCards[selection]->Tap();
+            if(!(selection>=0&&selection<landCards.size())){
+                landCards[selection]->Tap();
+            } else {
+                return;
+            }
         }
     }
 
@@ -897,7 +902,7 @@ void turnLoop() {
     ourPlayer->untapAllinPlay();
 
     ////Play
-    cout << GREEN << "Do you want to play a land card? (Y/N)" << RESET << endl;
+    cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
     string answer;
     cin >> answer;
 
