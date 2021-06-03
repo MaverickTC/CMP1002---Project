@@ -576,7 +576,7 @@ class Effect {
     virtual void use(shared_ptr<Card>& C) = 0;
 };
 
-class DestroyEffect : Effect {
+class DestroyEffect : public Effect {
 public:
     void use(shared_ptr<Card>&C) {
        
@@ -672,7 +672,7 @@ public:
     }
 };
 
-    class DealDamageEffect : Effect {
+    class DealDamageEffect : public Effect {
 public: 
     void use(shared_ptr<Card>& C) {
            
@@ -730,7 +730,7 @@ public:
      }
  };
 
-    class DealDamageToAllEffect : Effect
+    class DealDamageToAllEffect : public Effect
     {
     public :void use(shared_ptr<Card>& C) {
             
@@ -781,7 +781,7 @@ public:
 
     };
 
-    class GainStatsEffect : Effect {
+    class GainStatsEffect : public Effect {
     public: void use(shared_ptr<Card>& C) {
 
         vector<shared_ptr<Card>> cardsP1;
@@ -907,7 +907,7 @@ public:
 
     };
 
-    class ReturnCreatureToLifeEffect : Effect {
+    class ReturnCreatureToLifeEffect : public Effect {
     public: void use(shared_ptr<Card>& C) {
             
             shared_ptr<Player> targetPlayer;
@@ -945,7 +945,7 @@ public:
 
     };
 
-    class GainTrampleEffect : Effect {
+    class GainTrampleEffect : public Effect {
     public: void use(shared_ptr<Card>& C) {
         shared_ptr<Player> targetPlayer;
         vector<shared_ptr<Card>> cards;
@@ -984,7 +984,7 @@ public:
 
     };                              
 
-    class LoseGreenTrampleEffect : Effect {
+    class LoseGreenTrampleEffect : public Effect {
         //bunu sadece green için yap.
     public: void use(shared_ptr<Card>& C) {
         shared_ptr<Player> targetPlayer;
@@ -1026,7 +1026,7 @@ public:
 
     };                          
 
-    class LoseFirstStrikeEffect : Effect {
+    class LoseFirstStrikeEffect : public Effect {
 
 public: void use(shared_ptr<Card>& C) {
             shared_ptr<Player> targetPlayer;
@@ -1259,6 +1259,7 @@ public: void use(shared_ptr<Card>& C) {
     protected:
         string manaCost;
         string color;
+        Effect* effect;
         std::shared_ptr<Player> p1;
     public:
 
@@ -1268,13 +1269,13 @@ public: void use(shared_ptr<Card>& C) {
             color = "no color";
         }
 
-        EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1) :Card(name, type)
+        EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect* effect) :Card(name, type)
         {
 
             this->manaCost = manaCost;
+            this->effect = effect;
             this->color = color;
             this->p1 = p1;
-
         }
 
         void ActivateEnchantment()
@@ -1309,13 +1310,14 @@ public: void use(shared_ptr<Card>& C) {
     protected:
         string manaCost;
         string color;
-
+        Effect* effect;
     public:
         std::shared_ptr<Player> p1;
-        SorceryCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1) :Card(name, type)
+        SorceryCard(string name, string type, string manaCost, string color, shared_ptr<Player> p1, Effect* effect) :Card(name, type)
         {
 
             this->manaCost = manaCost;
+            this->effect = effect;
             this->color = color;
             this->p1 = p1;
         }
@@ -1409,6 +1411,15 @@ public: void use(shared_ptr<Card>& C) {
         ourPlayer->tapSelectedLandCards();
     }
 
+    DestroyEffect destroyEffect;
+    DealDamageEffect dealDamageEffect;
+    DealDamageToAllEffect dealDamageToAllEffect;
+    GainStatsEffect gainStatsEffect;
+    ReturnCreatureToLifeEffect returnCreatureToLife;
+    GainTrampleEffect gainTrampleEffect;
+    LoseGreenTrampleEffect loseGreenTrampleEffect;
+    LoseFirstStrikeEffect loseFirstStrikeEffect;
+
     void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
         shared_ptr<Player> player1;
         shared_ptr<Player> player2;
@@ -1428,15 +1439,15 @@ public: void use(shared_ptr<Card>& C) {
         shared_ptr<Card>C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player1);
 
         ////Sorcery Cards
-        shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1);
-        shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1);
-        shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1);
-        shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1);
+        shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1, &destroyEffect);
+        shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1, &dealDamageEffect);
+        shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, &destroyEffect);
+        shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, &destroyEffect);
 
         ////Enchantment Cards
-        shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1);
-        shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1);
-        shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "White", "1W", player1);
+        shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1, &gainTrampleEffect);
+        shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1, &gainStatsEffect);
+        shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "White", "1W", player1, &gainStatsEffect);
 
         //Land Cards
         shared_ptr<Card>C18 = make_shared<LandCard>("Plains", "Land", "W", player1);
@@ -1491,15 +1502,15 @@ public: void use(shared_ptr<Card>& C) {
         C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player2);
 
         //Sorcery Cards
-        C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2);
-        C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2);
-        C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2);
-        C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2);
+        C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2, &returnCreatureToLife);
+        C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2, &dealDamageToAllEffect);
+        C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, &destroyEffect);
+        C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, &destroyEffect);
 
         //Enchantment Card
-        C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2);
-        C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2);
-        C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2);
+        C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2, &gainStatsEffect);
+        C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2, &loseGreenTrampleEffect);
+        C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2, &loseFirstStrikeEffect);
 
         //Land Card
         C18 = make_shared<LandCard>("Swamp", "Land", "B", player2);
@@ -1696,6 +1707,51 @@ public: void use(shared_ptr<Card>& C) {
         p1 = make_shared<Player>();
         p2 = make_shared<Player>();
 
+        for(int i = 0;i<8;i++){
+            switch (i){
+                case 0: {
+                    DestroyEffect destroyEffect;
+                    //allEffects.push_back(destroyEffect);
+                    break;
+                }
+                case 1: {
+                    DealDamageEffect dealDamageEffect;
+                    //allEffects.push_back(dealDamageEffect);
+                    break;
+                }
+                case 2:{
+                    DealDamageToAllEffect dealDamageToAllEffect;
+                    //allEffects.push_back(dealDamageToAllEffect);
+                    break;
+                }
+                case 3:{
+                    GainStatsEffect gainStatsEffect;
+                    //allEffects.push_back(gainStatsEffect);
+                    break;
+                }
+                case 4:{
+                    ReturnCreatureToLifeEffect returnCreatureToLifeEffect;
+                    //allEffects.push_back(returnCreatureToLifeEffect);
+                    break;
+                }
+                case 5:{
+                    GainTrampleEffect gainTrampleEffect;
+                    //allEffects.push_back(gainTrampleEffect);
+                    break;
+                }
+                case 6:{
+                    LoseGreenTrampleEffect loseGreenTrampleEffect;
+                    //allEffects.push_back(loseGreenTrampleEffect);
+                    break;
+                }
+                case 7:{
+                    LoseFirstStrikeEffect loseFirstStrikeEffect;
+                    //allEffects.push_back(loseFirstStrikeEffect);
+                    break;
+                }
+            }
+        }
+
         createDecks(p1, p2);
 
         selectRandomCardsFromLibraryToPutIntoHand(p1);
@@ -1710,8 +1766,6 @@ public: void use(shared_ptr<Card>& C) {
         playGame();
     }
     int main() {
-
-
         setupGame();
 
         return 0;
