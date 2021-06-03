@@ -1353,9 +1353,11 @@ public: void use(shared_ptr<Card>& C) {
     void turnLoop() {
         shared_ptr<Player> ourPlayer;
         if (turn == 0) {
+            cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "1 ---" << RESET << endl;
             ourPlayer = p1;
         }
         else if (turn == 1) {
+            cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "2 ---" << RESET << endl;
             ourPlayer = p2;
         }
 
@@ -1383,6 +1385,7 @@ public: void use(shared_ptr<Card>& C) {
         ourPlayer->untapAllinPlay();
 
         ////Play
+        bool isPlayedLandCard = false;
         cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
         string answer;
         cin >> answer;
@@ -1390,6 +1393,7 @@ public: void use(shared_ptr<Card>& C) {
         if (answer == "Y" || answer == "y") {
             selection = (ourPlayer->getAndPrintHandVector(true));
             ourPlayer->playItemAtHand(selection);
+            isPlayedLandCard = true;
         }
 
         bool stop = false;
@@ -1409,6 +1413,23 @@ public: void use(shared_ptr<Card>& C) {
 
         ////Tap
         ourPlayer->tapSelectedLandCards();
+
+        ////Play2
+        if(isPlayedLandCard){
+            cout << BOLDRED << "You can't play land card anymore for this turn."  << RESET << endl;
+        } else {
+            cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
+            cin >> answer;
+
+            if (answer == "Y" || answer == "y") {
+                selection = (ourPlayer->getAndPrintHandVector(true));
+                ourPlayer->playItemAtHand(selection);
+            }
+        }
+        ////Cleanup
+        for(int i = 0;i<ourPlayer->manaCount.size();i++){
+            ourPlayer->manaCount[i] = 0;
+        }
     }
 
     DestroyEffect destroyEffect;
@@ -1555,6 +1576,46 @@ public: void use(shared_ptr<Card>& C) {
 
     void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card> defendingCreature, shared_ptr<Player >& defendingPlayer)
     {
+        shared_ptr<Player> targetPlayer;
+        vector<shared_ptr<Card>> cards;
+
+        if (turn == 0) {
+            targetPlayer = p1;
+        }
+        else {
+            targetPlayer = p2;
+        }
+        if (targetPlayer->inPlay.size() < 1) {//////////////////??
+            return;
+        }
+
+        for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+        {
+            if (targetPlayer->inPlay[i]->getType() == "Creature") {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                targetPlayer->inPlay[i]->printInfo();
+                cards.push_back(targetPlayer->inPlay[i]);
+            }
+        }
+
+        if (turn == 0) {
+            targetPlayer = p1;
+        }
+        else {
+            targetPlayer = p2;
+        }
+        if (targetPlayer->inPlay.size() < 1) {//////////////////??
+            return;
+        }
+
+        for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+        {
+            if (targetPlayer->inPlay[i]->getType() == "Creature") {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                targetPlayer->inPlay[i]->printInfo();
+                cards.push_back(targetPlayer->inPlay[i]);
+            }
+        }
 
         if (defendingCreature == nullptr)
         {
@@ -1698,8 +1759,6 @@ public: void use(shared_ptr<Card>& C) {
         while (!isGameFinished) {
             turnLoop();
             turn = (turn == 0) ? turn = 1 : turn = 0;
-            isGameFinished = true;
-
         }
     }
 
