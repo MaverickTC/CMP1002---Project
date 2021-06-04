@@ -499,7 +499,7 @@ public:
         while ((selection < 0 || selection >= cards.size()) && cards.size() > 0) {
             cout << BOLDMAGENTA << "Please enter an index number to play" << str << "card or enter -1 to skip" << RESET << endl;
             cin >> selection;
-            if (selection == -1) {
+            if (selection == -1||cards.size()<=1) {
                 stop = true;
                 selection = 0; //Daha iyi bir yol bulunabilir.
                 break;
@@ -681,7 +681,7 @@ public:
             //target Creature
             for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
             {
-                if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
+                if (targetPlayer->returnCard(2)[i]->getType() == "Creature"&&targetPlayer->returnCard(2)[i]->getStatus()==false) {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
                     targetPlayer->returnCard(2)[i]->printInfo();
                     cards.push_back(targetPlayer->returnCard(2)[i]);
@@ -1227,6 +1227,19 @@ public:
         return attackPower;
     }
 
+    bool isDead()
+    {
+        if (hp <= 0)
+        {
+            isDestroyed = true;
+        }
+        else
+        {
+            isDestroyed = false;
+        }
+
+        return isDestroyed;
+    }
 
     void setHp(int a)
     {
@@ -1409,53 +1422,23 @@ public:
 };
 void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card> defendingCreature, shared_ptr<Player >& defendingPlayer)
 {
-    /*
-    shared_ptr<Player> targetPlayer;
-    vector<shared_ptr<Card>> cards;
-    if (turn == 0) {
-        targetPlayer = p1;
-    }
-    else {
-        targetPlayer = p2;
-    }
-    if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
-        return;
-    }
-    for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
-    {
-        if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
-            cards.push_back(targetPlayer->returnCard(2)[i]);
-        }
-    }
-    if (turn == 0) {
-        targetPlayer = p1;
-    }
-    else {
-        targetPlayer = p2;
-    }
-    if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
-        return;
-    }
-    for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
-    {
-        if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
-            cards.push_back(targetPlayer->returnCard(2)[i]);
-        }
-    }
-    */
-
+ 
     if (defendingCreature == nullptr)
     {
         //DEFENDER YOK ISE
         defendingPlayer->setHp(defendingPlayer->getHp() - attackingCreature->getAttackPower());
 
+        cout << "combat with no defenders";
         cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
     }
 
     else if (attackingCreature->getHasFirstStrike() == true && defendingCreature->getHasFirstStrike() == true)
     {   //İKİSİNDE DE FIRST STRIKE VARSA NORMAL COMBAT
-        defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
 
+        cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) has first strike. normal combat" << endl;
+
+
+        defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
         attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
 
         cout << "ATTACKING CREATURE HAS : " << attackingCreature->getHp() << "HP LEFT." << endl;
@@ -1463,28 +1446,30 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 
         if (defendingCreature->isDead())
         {
-            cout << "DEFENDING CREATURE HAS DIED." << endl;
+            cout << defendingCreature->getName() << " (DEFENDER) HAS DIED." << endl;
             defendingPlayer->addCardToDiscard(defendingCreature);
         }
 
         if (attackingCreature->isDead())
         {
-            cout << "ATTACKING CREATURE HAS DIED." << endl;
+            cout << attackingCreature->getName()<< " (ATTACKER) HAS DIED." << endl;
 
             attakingPlayer->addCardToDiscard(attackingCreature);
         }
 
+        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+
     }
 
 
-    else if (attackingCreature->getHasFirstStrike() == true)
+    else if (attackingCreature->getHasFirstStrike() == true&&defendingCreature->getHasFirstStrike()==false)
     {
         defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
         cout << "DEFENDING CREATURE HAS : " << defendingCreature->getHp() << "HP LEFT." << endl;
 
         if (defendingCreature->isDead())
         {
-            cout << "DEFENDING CREATURE HAS DIED." << endl;
+            cout << defendingCreature->getName() << " (DEFENDER) HAS DIED." << endl;
             defendingPlayer->addCardToDiscard(defendingCreature);
         }
 
@@ -1495,16 +1480,19 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 
             if (attackingCreature->isDead())
             {
-                cout << "ATTACKING CREATURE HAS DIED." << endl;
+                cout << attackingCreature->getName() << " (ATTACKER) HAS DIED." << endl;
                 attakingPlayer->addCardToDiscard(attackingCreature);
             }
 
         }
 
+
+        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+
     }
-    else if (defendingCreature->getHasFirstStrike() == true)
+    else if (defendingCreature->getHasFirstStrike() == true&&attackingCreature->getHasFirstStrike()==false)
     {
-        //defending'de first strike varsa.
+        cout << defendingCreature->getName()<<"(defending) creature has first strike and "<<attackingCreature->getName()<<"(attacking) doesnt have it." << endl;
         attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
 
         if (attackingCreature->isDead())
@@ -1519,11 +1507,13 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 
             if (defendingCreature->isDead())
             {
-                cout << "DEFENDING CREATURE HAS DIED." << endl;
+                cout << defendingCreature->getName() << " (DEFENDER) HAS DIED." << endl;
                 defendingPlayer->addCardToDiscard(defendingCreature);
             }
 
         }
+
+        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
 
     }
 
@@ -1531,6 +1521,7 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
     else if (attackingCreature->getHasTrample() == true)
     {
         //attacking'de trample varsa.
+        cout <<attackingCreature->getName() << "(attacking) has trample." << endl;
 
         int excess_damage;
 
@@ -1541,37 +1532,41 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 
         if (defendingCreature->isDead())
         {
-            cout << "DEFENDING CREATURE HAS DIED." << endl;
+            cout << defendingCreature->getName() << " (DEFENDER) HAS DIED." << endl;
             defendingPlayer->addCardToDiscard(defendingCreature);
         }
 
         if (attackingCreature->isDead())
         {
-            cout << "ATTACKING CREATURE HAS DIED." << endl;
+            cout << attackingCreature->getName() << " (ATTACKER) HAS DIED." << endl;
 
             attakingPlayer->addCardToDiscard(attackingCreature);
         }
 
         defendingPlayer->setHp(defendingPlayer->getHp() - excess_damage);
+
+        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
     }
 
     else {
-        //ikisi de normal creature'lar ise
+    cout << "iki creature da normal." << endl;
         defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
 
         attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
 
         cout << "ATTACKING CREATURE HAS : " << attackingCreature->getHp() << "HP LEFT." << endl;
-        cout << "DEFENDING CREATURE HAS : " << attackingCreature->getHp() << "HP LEFT." << endl;
+        cout << "DEFENDING CREATURE HAS : " << defendingCreature->getHp() << "HP LEFT." << endl;
+
+
         if (defendingCreature->isDead())
         {
-            cout << "DEFENDING CREATURE HAS DIED." << endl;
+            cout << defendingCreature->getName() << " (DEFENDER) HAS DIED." << endl;
             defendingPlayer->addCardToDiscard(defendingCreature);
         }
 
         if (attackingCreature->isDead())
         {
-            cout << "ATTACKING CREATURE HAS DIED." << endl;
+            cout << attackingCreature->getName() << " (ATTACKER) HAS DIED." << endl;
 
             attakingPlayer->addCardToDiscard(attackingCreature);
         }
@@ -1731,45 +1726,49 @@ void turnLoop() {
         }
 
         int sToDefend = -1;
-        while (((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1)&& otherCards.size()>0) {
+        while (((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1)&& otherCards.size()>0&&usedDefendCards.size()<defendCardCount) {
             
-            cout << "size is "<<otherCards.size();
-            
-            for (int j = 0; j < otherCards.size(); j++) {
-                cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " "
-                    << endl;
-            }
-
             cout << BOLDMAGENTA << "Please enter an index to defend." << RESET << endl;
             cin >> sToDefend;
-            if (sToDefend == -1) {
+
+            cout << "other cards size is : " << otherCards.size();
+            if (sToDefend == -1||otherCards.size()<=1) {
                 break;
             }
 
-            cout << "other cards size is " << otherCards.size() << endl;
+            
                 usedDefendCards.push_back(otherCards[sToDefend]);
                 otherCards.erase(otherCards.begin() + sToDefend);
-                
-                // otherCards.erase(remove(otherCards.begin(), otherCards.end(), otherCards[s]), otherCards.end());
                 defendCardCount++;
-                cout << "other cards size after is " << otherCards.size() << endl;
+                
         }
     }
+
+    cout << "used attack cards size is : " << usedAttackCards.size() << endl;
+    cout << "used defend cards size is : " << usedDefendCards.size() << endl;
+
 
 
         if (usedAttackCards.size() > usedDefendCards.size()) {
             for (int i = 0; i < usedAttackCards.size(); i++) {
                 if (i < usedDefendCards.size()) {
                     combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
+
+                    cout << "used attack cards are" << usedAttackCards[i] << endl;
+                    cout << "used defending cards are" << usedDefendCards[i] << endl;
                 }
                 else {
                     combat(usedAttackCards[i], ourPlayer, nullptr, targetPlayer);
+                    cout << "used attack cards are" << usedAttackCards[i] << endl;
                 }
             }
         }
         else if (usedAttackCards.size() == usedDefendCards.size()) {
             for (int i = 0; i < usedAttackCards.size(); i++) {
                 combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
+                cout << "used attack cards are" << usedAttackCards[i] << endl;
+                cout << "used defending cards are" << usedDefendCards[i] << endl;
+
             }
         }
 
