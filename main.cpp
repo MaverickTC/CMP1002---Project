@@ -1644,9 +1644,11 @@ void turnLoop() {
     bool isPlayedLandCard = false;
     ourPlayer->printHand();
 
+    string answer;
+
     if(ourPlayer->returnCard(1).size()){
         cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
-        string answer;
+
         cin >> answer;
 
         if (answer == "Y" || answer == "y") {
