@@ -1644,27 +1644,22 @@ void turnLoop() {
         i++;
     }
 
-    vector<shared_ptr<Card>> inPlayCards = ourCards;
-    vector<shared_ptr<Card>> targetinPlayCards = otherCards;
     if (ourCards.size() > 0) {
         int s = -1;
         while ((s >= 0 && s < ourCards.size()) || s == -1) {
-            int x = 0;
-            for (int j = 0; j < inPlayCards.size(); j++) {
-                if (inPlayCards[j]->getType() == "Creature") {
-                    cout << BOLDRED << "Index:" << x << " " << RESET << inPlayCards[j]->getName() << " " << endl;
-                    x++;
-                }
+            for (int j = 0; j < ourCards.size(); j++) {
+                cout << BOLDRED << "Index:" << j << " " << RESET << ourCards[j]->getName() << " " << endl;
             }
 
             cout << BOLDMAGENTA << "Please enter an index number for a creature." << RESET << endl;
             cin >> s;
+            if(s==-1){
+                break;
+            }
             //if ((s >= 0 && s < ourCards.size())) {
-            cout << ourCards.size();
             if (find(ourCards.begin(), ourCards.end(), ourCards[s]) != ourCards.end()) {
                 usedAttackCards.push_back(ourCards[s]);
                 ourCards.erase(remove(ourCards.begin(), ourCards.end(), ourCards[s]), ourCards.end());
-                inPlayCards.erase(remove(inPlayCards.begin(), inPlayCards.end(), ourCards[s]), inPlayCards.end());
                 attackCardCount++;
             }
             //}
@@ -1678,71 +1673,65 @@ void turnLoop() {
             cout << "How many defending card do you want to use? (Max: " << attackCardCount << ")" << endl;
             cin >> defendCardCount;
         }
-        int x = 0;
-        for (int j = 0; j < targetinPlayCards.size(); j++) {
-            if (targetinPlayCards[j]->getType() == "Creature") {
-                cout << BOLDRED << "Index:" << x << " " << RESET << targetinPlayCards[j]->getName() << " " << endl;
-                x++;
+        for (int j = 0; j < otherCards.size(); j++) {
+            if (otherCards[j]->getType() == "Creature") {
+                cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " " << endl;
             }
         }
 
         int sToDefend = -1;
         while ((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1) {
             int x = 0;
-            for (int j = 0; j < targetinPlayCards.size(); j++) {
-                if (targetinPlayCards[j]->getType() == "Creature") {
-                    cout << BOLDRED << "Index:" << x << " " << RESET << targetinPlayCards[j]->getName() << " "
-                        << endl;
-                    x++;
-                }
+            for (int j = 0; j < otherCards.size(); j++) {
+                cout << BOLDRED << "Index:" << x << " " << RESET << otherCards[j]->getName() << " "
+                     << endl;
             }
 
             cout << BOLDMAGENTA << "Please enter an index to defend." << RESET << endl;
             cin >> sToDefend;
+            if (sToDefend == -1) {
+                break;
+            }
 
             if (find(otherCards.begin(), otherCards.end(), otherCards[s]) != otherCards.end()) {
                 usedDefendCards.push_back(otherCards[s]);
                 otherCards.erase(remove(otherCards.begin(), otherCards.end(), otherCards[s]), otherCards.end());
-                targetinPlayCards.erase(remove(targetinPlayCards.begin(), targetinPlayCards.end(), otherCards[s]),
-                    targetinPlayCards.end());
                 defendCardCount++;
             }
         }
-    }
 
-    if (usedAttackCards.size() > usedDefendCards.size()) {
-        for (int i = 0; i < usedAttackCards.size(); i++) {
-            if (i < usedDefendCards.size()) {
+
+        if (usedAttackCards.size() > usedDefendCards.size()) {
+            for (int i = 0; i < usedAttackCards.size(); i++) {
+                if (i < usedDefendCards.size()) {
+                    combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
+                } else {
+                    combat(usedAttackCards[i], ourPlayer, nullptr, targetPlayer);
+                }
+            }
+        } else if (usedAttackCards.size() == usedDefendCards.size()) {
+            for (int i = 0; i < usedAttackCards.size(); i++) {
                 combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
             }
-            else {
-                combat(usedAttackCards[i], ourPlayer, nullptr, targetPlayer);
+        }
+
+
+        ////Play2
+        if (isPlayedLandCard) {
+            cout << BOLDRED << "You can't play land card anymore for this turn." << RESET << endl;
+        } else {
+            cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
+            cin >> answer;
+
+            if (answer == "Y" || answer == "y") {
+                selection = (ourPlayer->getAndPrintHandVector(true));
+                ourPlayer->playItemAtHand(selection);
             }
         }
-    }
-    else if (usedAttackCards.size() == usedDefendCards.size()) {
-        for (int i = 0; i < usedAttackCards.size(); i++) {
-            combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
+        ////Cleanup
+        for (int i = 0; i < ourPlayer->getMana().size(); i++) {
+            ourPlayer->getMana()[i] = 0;
         }
-    }
-
-
-    ////Play2
-    if (isPlayedLandCard) {
-        cout << BOLDRED << "You can't play land card anymore for this turn." << RESET << endl;
-    }
-    else {
-        cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
-        cin >> answer;
-
-        if (answer == "Y" || answer == "y") {
-            selection = (ourPlayer->getAndPrintHandVector(true));
-            ourPlayer->playItemAtHand(selection);
-        }
-    }
-    ////Cleanup
-    for (int i = 0; i < ourPlayer->getMana().size(); i++) {
-        ourPlayer->getMana()[i] = 0;
     }
 }
 
