@@ -72,6 +72,9 @@ public:
 
     bool isDead()
     {
+        cout << "hp is "<<hp << endl;
+
+
         if (hp <= 0)
         {
             isDestroyed = true;
@@ -966,18 +969,25 @@ public: void use(shared_ptr<Card>& C) {
         }
     }
 
-    int selectionIndex;
-    cout << "Please enter an index of a creature to return it back to life.";
-    cin >> selectionIndex;
+    if (cards.size() > 0)
+    {
+        int selectionIndex;
+        cout << "Please enter an index of a creature to return it back to life.";
+        cin >> selectionIndex;
 
-    if (selectionIndex >= 0 && selectionIndex < cards.size()) {
-        cards[selectionIndex]->setAttack(cards[selectionIndex]->getMaxAttack());
-        cards[selectionIndex]->setHp(cards[selectionIndex]->getMaxHP());
-        targetPlayer->addCardToHandbyCard(cards[selectionIndex]);
+        if (selectionIndex >= 0 && selectionIndex < cards.size()) {
+            cards[selectionIndex]->setAttack(cards[selectionIndex]->getMaxAttack());
+            cards[selectionIndex]->setHp(cards[selectionIndex]->getMaxHP());
+            targetPlayer->addCardToHandbyCard(cards[selectionIndex]);
+        }
+        else {
+            return; //please enter a valid index?
+        }
+
     }
-    else {
-        return; //please enter a valid index?
-    }
+
+
+
 }
 
 };
@@ -1006,18 +1016,22 @@ public: void use(shared_ptr<Card>& C) {
         }
     }
 
-    int selectionIndex;
-    cout << "Please enter creature index of which you want to add trample." << endl;
-    cin >> selectionIndex;
+    if (cards.size() > 0)
+    {
+        int selectionIndex;
+        cout << "Please enter creature index of which you want to add trample." << endl;
+        cin >> selectionIndex;
 
-    if (selectionIndex >= 0 && selectionIndex < cards.size()) {
-        cards[selectionIndex]->setTrample(true);
+        if (selectionIndex >= 0 && selectionIndex < cards.size()) {
+            cards[selectionIndex]->setTrample(true);
+        }
+        else {
+            return; //"please enter a valid index?"
+        }
+
     }
-    else {
-        return; //"please enter a valid index?"
-    }
+
 }
-
 
 };
 
@@ -1049,16 +1063,21 @@ public: void use(shared_ptr<Card>& C) {
         }
     }
 
-    int selectionIndex;
-    cout << "Please enter creature index of which you want to remove its trample." << endl;
-    cin >> selectionIndex;
+    if (cards.size() > 0)
+    {
+        int selectionIndex;
+        cout << "Please enter creature index of which you want to remove its trample." << endl;
+        cin >> selectionIndex;
 
-    if (selectionIndex >= 0 && selectionIndex < cards.size()) {
-        cards[selectionIndex]->setTrample(false);
+        if (selectionIndex >= 0 && selectionIndex < cards.size()) {
+            cards[selectionIndex]->setTrample(false);
+        }
+        else {
+            return; //"please enter a valid index?"
+        }
+
     }
-    else {
-        return; //"please enter a valid index?"
-    }
+
 }
 
 };
@@ -1088,16 +1107,24 @@ public: void use(shared_ptr<Card>& C) {
         }
     }
 
-    int selectionIndex;
-    cout << "Please enter creature index of which you want to remove its first strike." << endl;
-    cin >> selectionIndex;
 
-    if (selectionIndex >= 0 && selectionIndex < cards.size()) {
-        cards[selectionIndex]->setFirstStrike(false);
+    if (cards.size() > 0)
+    {
+        int selectionIndex;
+        cout << "Please enter creature index of which you want to remove its first strike." << endl;
+        cin >> selectionIndex;
+
+        if (selectionIndex >= 0 && selectionIndex < cards.size()) {
+            cards[selectionIndex]->setFirstStrike(false);
+        }
+        else {
+            return; //"please enter a valid index?"
+        }
+
+
     }
-    else {
-        return; //"please enter a valid index?"
-    }
+
+
 }
 };
 
@@ -1570,6 +1597,8 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 
     else {
         cout << "iki creature da normal." << endl;
+
+
         defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
 
         attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
@@ -1646,7 +1675,7 @@ void turnLoop() {
 
     string answer;
 
-    if(ourPlayer->returnCard(1).size()){
+    if (ourPlayer->returnCard(1).size()>0) {
         cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
 
         cin >> answer;
@@ -1755,7 +1784,7 @@ void turnLoop() {
             cin >> defendCardCount;
         }
         for (int j = 0; j < otherCards.size(); j++) {
-            if (otherCards[j]->getType() == "Creature" && targetPlayer->returnCard(2)[i]->getStatus()==false) {
+            if (otherCards[j]->getType() == "Creature" && otherCards[j]->getStatus() == false) {
                 cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " " << endl;
             }
         }
@@ -1767,7 +1796,12 @@ void turnLoop() {
             cin >> sToDefend;
 
             cout << "other cards size is : " << otherCards.size();
-            if (sToDefend == -1 || otherCards.size() <= 1) {
+            cout << sToDefend << endl;
+            cout << otherCards.size() << endl;
+            cout << defendCardCount << endl;
+
+
+            if (sToDefend == -1 || otherCards.size() < 1) {
                 break;
             }
 
@@ -1911,12 +1945,12 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
 
     //Creature Cards
     C1 = make_shared<CreatureCard>("Skeleton", "Creature", 1, "B", "Black", 1, player2);
-    C1 = make_shared<CreatureCard>("Skeleton", "Creature", 1, "B", "Black", 1, player2);
-    C1 = make_shared<CreatureCard>("Skeleton", "Creature", 1, "B", "Black", 1, player2);
+    C2 = make_shared<CreatureCard>("Skeleton", "Creature", 1, "B", "Black", 1, player2);
+    C3 = make_shared<CreatureCard>("Skeleton", "Creature", 1, "B", "Black", 1, player2);
     C4 = make_shared<CreatureCard>("Ghost", "Creature", 2, "1B", "Black", 1, player2);
-    C4 = make_shared<CreatureCard>("Ghost", "Creature", 2, "1B", "Black", 1, player2);
+    C5 = make_shared<CreatureCard>("Ghost", "Creature", 2, "1B", "Black", 1, player2);
     C6 = make_shared<CreatureCard>("Black Knight", "Creature", 2, "BB", "Black", 2, player2);
-    C6 = make_shared<CreatureCard>("Black Knight", "Creature", 2, "BB", "Black", 2, player2);
+    C7 = make_shared<CreatureCard>("Black Knight", "Creature", 2, "BB", "Black", 2, player2);
     C8 = make_shared<CreatureCard>("Orc Maniac", "Creature", 4, "2R", "Red", 1, player2);
     C9 = make_shared<CreatureCard>("Hobgoblin", "Creature", 3, "1RB", "Red", 3, player2);
     C10 = make_shared<CreatureCard>("Vampire", "Creature", 6, "3B", "Black", 3, player2);
