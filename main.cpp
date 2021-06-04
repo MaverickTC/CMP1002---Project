@@ -68,6 +68,7 @@ public:
         isTapped = false;
     }
 
+
     bool isDead()
     {
         if (hp <= 0)
@@ -169,13 +170,12 @@ void setVectorSize(vector<int>* v) { //Vektör boşsa içine 5 tane 0 ekliyor. (
 }
 class Player {
 protected:
-
     bool hasWon;
     int hp;
-
-public:
     vector<shared_ptr<Card>> library, hand, inPlay, discard;
     vector<int> manaCount; //White, Green, Black, Red, Blue, Colorless
+public:
+
     Player()
     {
         hp = 15;
@@ -195,7 +195,22 @@ public:
     void setHp(int a)
     {
         hp = a;
+    }
 
+    vector<shared_ptr<Card>> returnCard(int which){
+        if(which==0){
+            return library;
+        } else if(which==1){
+            return hand;
+        } else if(which==2){
+            return inPlay;
+        } else if(which==3){
+            return discard;
+        }
+    }
+
+    vector<int> getMana(){
+        return manaCount;
     }
 
     void setManaVector(string manaType)
@@ -582,7 +597,7 @@ class Effect {
 class DestroyEffect : public Effect {
 public:
     void use(shared_ptr<Card>&C) {
-       
+
         shared_ptr<Player> targetPlayer;
         vector<shared_ptr<Card>> cards;
         if (turn == 0) {
@@ -591,19 +606,19 @@ public:
         else {
             targetPlayer = p1;
         }
-        if (targetPlayer->inPlay.size() < 1) {
+        if (targetPlayer->returnCard(2).size() < 1) {
             return;  //Eğer inPlay boşsa soruya gerek yok.
         }
 
         if (C->getName() == "Disenchant")
         {
             //target enchantment
-            for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+            for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
             {
-                if (targetPlayer->inPlay[i]->getType() == "Enchantment") {
+                if (targetPlayer->returnCard(2)[i]->getType() == "Enchantment") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    targetPlayer->inPlay[i]->printInfo();
-                    cards.push_back(targetPlayer->inPlay[i]);
+                    targetPlayer->returnCard(2)[i]->printInfo();
+                    cards.push_back(targetPlayer->returnCard(2)[i]);
                 }
             }
 
@@ -621,17 +636,17 @@ public:
             }
             cards.empty();
         }
-        
+
         else if (C->getName() == "Flood")
         {
             //target land
-              
-            for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+
+            for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
             {
-                if (targetPlayer->inPlay[i]->getType() == "Land") {
+                if (targetPlayer->returnCard(2)[i]->getType() == "Land") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    targetPlayer->inPlay[i]->printInfo();
-                    cards.push_back(targetPlayer->inPlay[i]);
+                    targetPlayer->returnCard(2)[i]->printInfo();
+                    cards.push_back(targetPlayer->returnCard(2)[i]);
                 }
             }
             int selectionIndex;
@@ -647,16 +662,16 @@ public:
             }
             cards.empty();
         }
-        
+
         else if (C->getName() == "Terror")
         {
             //target Creature
-            for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+            for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
             {
-                if (targetPlayer->inPlay[i]->getType() == "Creature") {
+                if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    targetPlayer->inPlay[i]->printInfo();
-                    cards.push_back(targetPlayer->inPlay[i]);
+                    targetPlayer->returnCard(2)[i]->printInfo();
+                    cards.push_back(targetPlayer->returnCard(2)[i]);
                 }
             }
             int selectionIndex;
@@ -671,14 +686,14 @@ public:
             }
             cards.empty();
         }
-        
+
     }
 };
 
-    class DealDamageEffect : public Effect {
-public: 
+class DealDamageEffect : public Effect {
+public:
     void use(shared_ptr<Card>& C) {
-           
+
         shared_ptr<Player> targetPlayer;
         vector<shared_ptr<Card>> cards;
         if (turn == 0) {
@@ -687,7 +702,7 @@ public:
         else {
             targetPlayer = p1;
         }
-        if (targetPlayer->inPlay.size() < 1) {
+        if (targetPlayer->returnCard(2).size() < 1) {
             return;
         }
         string selection;
@@ -696,12 +711,12 @@ public:
 
         if (selection == "C" || selection == "c")
         {
-            for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+            for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
             {
-                if (targetPlayer->inPlay[i]->getType() == "Creature") {
+                if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    targetPlayer->inPlay[i]->printInfo();
-                    cards.push_back(targetPlayer->inPlay[i]);
+                    targetPlayer->returnCard(2)[i]->printInfo();
+                    cards.push_back(targetPlayer->returnCard(2)[i]);
 
                 }
             }
@@ -709,16 +724,16 @@ public:
             cout << BOLDMAGENTA << "Please enter an index number of creature to deal 2 damage." << RESET << endl;
             cin >> damageIndex;
 
-            if (damageIndex >= 0 && damageIndex < cards.size()) 
+            if (damageIndex >= 0 && damageIndex < cards.size())
             {
                 cards[damageIndex]->setHp(cards[damageIndex]->getHp() - 2);
-                  if (cards[damageIndex]->isDead() == true)
-                    {
-                        targetPlayer->addCardToDiscard(cards[damageIndex]);
-                    }
-                    else {
-                        return;
-                    }
+                if (cards[damageIndex]->isDead() == true)
+                {
+                    targetPlayer->addCardToDiscard(cards[damageIndex]);
+                }
+                else {
+                    return;
+                }
             }
         }
 
@@ -730,62 +745,62 @@ public:
         else {
             cout << "please enter valid index" << endl; //error den sonra bişey yapmak gerek.
         }
-     }
- };
+    }
+};
 
-    class DealDamageToAllEffect : public Effect
-    {
-    public :void use(shared_ptr<Card>& C) {
-            
-            vector<shared_ptr<Card>> p1cards;
-            vector<shared_ptr<Card>> p2cards;
+class DealDamageToAllEffect : public Effect
+{
+public :void use(shared_ptr<Card>& C) {
 
-            //p1 creatures
-            for (int i = 0; i < p1->inPlay.size(); i++)
-            {
-                if (p1->inPlay[i]->getType() == "Creature") {
-                    cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p1->inPlay[i]->printInfo();
-                    p1cards.push_back(p1->inPlay[i]);
+        vector<shared_ptr<Card>> p1cards;
+        vector<shared_ptr<Card>> p2cards;
 
-                }
+        //p1 creatures
+        for (int i = 0; i < p1->returnCard(2).size(); i++)
+        {
+            if (p1->returnCard(2)[i]->getType() == "Creature") {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                p1->returnCard(2)[i]->printInfo();
+                p1cards.push_back(p1->returnCard(2)[i]);
+
             }
-
-            for (int i = 0; i < p1cards.size(); i++)
-            {
-                p1cards[i]->setHp(p1cards[i]->getHp() - 1);
-                if (p1cards[i]->isDead() == true)
-                {
-                    p1->addCardToDiscard(p1cards[i]);
-                }
-            }
-            p1cards.empty();
-
-            //p2 creatures
-            for (int i = 0; i < p2->inPlay.size(); i++)
-            {
-                if (p2->inPlay[i]->getType() == "Creature") {
-                    cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p2->inPlay[i]->printInfo();
-                    p2cards.push_back(p2->inPlay[i]);
-                }
-            }
-            for (int i = 0; i < p2cards.size(); i++)
-            {
-                p2cards[i]->setHp(p2cards[i]->getHp() - 1);
-                if (p2cards[i]->isDead() == true)
-                {
-                    p2->addCardToDiscard(p2cards[i]);
-                }
-            }
-            p2cards.empty();
-
         }
 
-    };
+        for (int i = 0; i < p1cards.size(); i++)
+        {
+            p1cards[i]->setHp(p1cards[i]->getHp() - 1);
+            if (p1cards[i]->isDead() == true)
+            {
+                p1->addCardToDiscard(p1cards[i]);
+            }
+        }
+        p1cards.empty();
 
-    class GainStatsEffect : public Effect {
-    public: void use(shared_ptr<Card>& C) {
+        //p2 creatures
+        for (int i = 0; i < p2->returnCard(2).size(); i++)
+        {
+            if (p2->returnCard(2)[i]->getType() == "Creature") {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                p2->returnCard(2)[i]->printInfo();
+                p2cards.push_back(p2->returnCard(2)[i]);
+            }
+        }
+        for (int i = 0; i < p2cards.size(); i++)
+        {
+            p2cards[i]->setHp(p2cards[i]->getHp() - 1);
+            if (p2cards[i]->isDead() == true)
+            {
+                p2->addCardToDiscard(p2cards[i]);
+            }
+        }
+        p2cards.empty();
+
+    }
+
+};
+
+class GainStatsEffect : public Effect {
+public: void use(shared_ptr<Card>& C) {
 
         vector<shared_ptr<Card>> cardsP1;
         vector<shared_ptr<Card>> cardsP2;
@@ -795,14 +810,14 @@ public:
         //HOLY WAR
         if (C->getName() == "Holy War")
         {
-            
+
             //p1 whites
-            for (int i = 0; i < p1->inPlay.size(); i++)
+            for (int i = 0; i < p1->returnCard(2).size(); i++)
             {
-                if (p1->inPlay[i]->getType() == "Creature" && p1->inPlay[i]->getColor() == "White") {
+                if (p1->returnCard(2)[i]->getType() == "Creature" && p1->returnCard(2)[i]->getColor() == "White") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p1->inPlay[i]->printInfo();
-                    cardsP1.push_back(p1->inPlay[i]);
+                    p1->returnCard(2)[i]->printInfo();
+                    cardsP1.push_back(p1->returnCard(2)[i]);
                 }
             }
             for (int i = 0; i < cardsP1.size(); i++)
@@ -811,66 +826,66 @@ public:
                 cardsP1[i]->setAttack(cardsP1[i]->getAttackPower() + 1);
             }
             cardsP1.empty();
-             //p2 whites
-            for (int i = 0; i < p2->inPlay.size(); i++)
+            //p2 whites
+            for (int i = 0; i < p2->returnCard(2).size(); i++)
             {
-                if (p2->inPlay[i]->getType() == "Creature" && p2->inPlay[i]->getColor() == "White") {
+                if (p2->returnCard(2)[i]->getType() == "Creature" && p2->returnCard(2)[i]->getColor() == "White") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p2->inPlay[i]->printInfo();
-                    cardsP2.push_back(p2->inPlay[i]);
+                    p2->returnCard(2)[i]->printInfo();
+                    cardsP2.push_back(p2->returnCard(2)[i]);
                 }
             }
             for (int i = 0; i < cardsP2.size(); i++)
             {
                 cardsP2[i]->setHp(cardsP2[i]->getHp() + 1);
                 cardsP2[i]->setAttack(cardsP2[i]->getAttackPower() + 1);
-             }
+            }
             cardsP2.empty();
         }
-        //UNHOLY WAR
+            //UNHOLY WAR
         else if (C->getName() == "Unholy War")
         {
             ////p1 blacks
-             for (int i = 0; i < p1->inPlay.size(); i++)
-             {
-                if (p1->inPlay[i]->getType() == "Creature" && p1->inPlay[i]->getColor() == "Black") {
-                cout << BOLDRED << "Index:" << i << " " << RESET;
-                p1->inPlay[i]->printInfo();
-                cardsP1.push_back(p1->inPlay[i]);
-                 }
-             }
+            for (int i = 0; i < p1->returnCard(2).size(); i++)
+            {
+                if (p1->returnCard(2)[i]->getType() == "Creature" && p1->returnCard(2)[i]->getColor() == "Black") {
+                    cout << BOLDRED << "Index:" << i << " " << RESET;
+                    p1->returnCard(2)[i]->printInfo();
+                    cardsP1.push_back(p1->returnCard(2)[i]);
+                }
+            }
             for (int i = 0; i < cardsP1.size(); i++)
             {
-                 cardsP1[i]->setAttack(cardsP1[i]->getAttackPower() + 2);
+                cardsP1[i]->setAttack(cardsP1[i]->getAttackPower() + 2);
             }
             cardsP1.empty();
 
             //p2 blacks
-            for (int i = 0; i < p2->inPlay.size(); i++)
+            for (int i = 0; i < p2->returnCard(2).size(); i++)
             {
-                if (p2->inPlay[i]->getType() == "Creature" && p2->inPlay[i]->getColor() == "Black") {
+                if (p2->returnCard(2)[i]->getType() == "Creature" && p2->returnCard(2)[i]->getColor() == "Black") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p2->inPlay[i]->printInfo();
-                    cardsP2.push_back(p2->inPlay[i]);
+                    p2->returnCard(2)[i]->printInfo();
+                    cardsP2.push_back(p2->returnCard(2)[i]);
                 }
             }
             for (int i = 0; i < cardsP2.size(); i++)
             {
-            cardsP2[i]->setAttack(cardsP2[i]->getAttackPower() + 2);
+                cardsP2[i]->setAttack(cardsP2[i]->getAttackPower() + 2);
             }
             cardsP2.empty();
 
         }
-        ///HOLY LIGHT
+            ///HOLY LIGHT
         else if (C->getName() == "Holy Light")
         {
             ////p1 blacks
-            for (int i = 0; i < p1->inPlay.size(); i++)
+            for (int i = 0; i < p1->returnCard(2).size(); i++)
             {
-                if (p1->inPlay[i]->getType() == "Creature" && p1->inPlay[i]->getColor() == "Black") {
+                if (p1->returnCard(2)[i]->getType() == "Creature" && p1->returnCard(2)[i]->getColor() == "Black") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p1->inPlay[i]->printInfo();
-                    cardsP1.push_back(p1->inPlay[i]);
+                    p1->returnCard(2)[i]->printInfo();
+                    cardsP1.push_back(p1->returnCard(2)[i]);
                 }
             }
             for (int i = 0; i < cardsP1.size(); i++)
@@ -885,12 +900,12 @@ public:
             cardsP1.empty();
 
             //p2 blacks
-            for (int i = 0; i < p2->inPlay.size(); i++)
+            for (int i = 0; i < p2->returnCard(2).size(); i++)
             {
-                if (p2->inPlay[i]->getType() == "Creature" && p2->inPlay[i]->getColor() == "Black") {
+                if (p2->returnCard(2)[i]->getType() == "Creature" && p2->returnCard(2)[i]->getColor() == "Black") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p2->inPlay[i]->printInfo();
-                    cardsP2.push_back(p2->inPlay[i]);
+                    p2->returnCard(2)[i]->printInfo();
+                    cardsP2.push_back(p2->returnCard(2)[i]);
                 }
             }
             for (int i = 0; i < cardsP2.size(); i++)
@@ -908,48 +923,11 @@ public:
 
     }
 
-    };
+};
 
-    class ReturnCreatureToLifeEffect : public Effect {
-    public: void use(shared_ptr<Card>& C) {
-            
-            shared_ptr<Player> targetPlayer;
-            vector<shared_ptr<Card>> cards;
+class ReturnCreatureToLifeEffect : public Effect {
+public: void use(shared_ptr<Card>& C) {
 
-            if (turn == 0) {
-                targetPlayer = p1;
-            }
-            else {
-                targetPlayer = p2;
-            }
-            
-            for (int i = 0; i < p1->discard.size(); i++)
-            {
-                if (targetPlayer->discard[i]->getType() == "Creature" ) {
-                    cout << BOLDRED << "Index:" << i << " " << RESET;
-                    p1->discard[i]->printInfo();
-                    cards.push_back(p1->discard[i]);
-                }
-            }
-
-            int selectionIndex;
-            cout << "Please enter an index of a creature to return it back to life.";
-            cin >> selectionIndex;
-
-            if (selectionIndex >= 0 && selectionIndex < cards.size()) {
-                cards[selectionIndex]->setAttack(cards[selectionIndex]->getMaxAttack());
-                cards[selectionIndex]->setHp(cards[selectionIndex]->getMaxHP());
-                targetPlayer->addCardToPlaybyCard(cards[selectionIndex]);
-            }
-            else {
-                return; //please enter a valid index?
-            }
-        }
-
-    };
-
-    class GainTrampleEffect : public Effect {
-    public: void use(shared_ptr<Card>& C) {
         shared_ptr<Player> targetPlayer;
         vector<shared_ptr<Card>> cards;
 
@@ -959,16 +937,53 @@ public:
         else {
             targetPlayer = p2;
         }
-        if (targetPlayer->inPlay.size() < 1) {//////////////////??
+
+        for (int i = 0; i < p1->returnCard(3).size(); i++)
+        {
+            if (targetPlayer->returnCard(3)[i]->getType() == "Creature" ) {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                p1->returnCard(3)[i]->printInfo();
+                cards.push_back(p1->returnCard(3)[i]);
+            }
+        }
+
+        int selectionIndex;
+        cout << "Please enter an index of a creature to return it back to life.";
+        cin >> selectionIndex;
+
+        if (selectionIndex >= 0 && selectionIndex < cards.size()) {
+            cards[selectionIndex]->setAttack(cards[selectionIndex]->getMaxAttack());
+            cards[selectionIndex]->setHp(cards[selectionIndex]->getMaxHP());
+            targetPlayer->addCardToPlaybyCard(cards[selectionIndex]);
+        }
+        else {
+            return; //please enter a valid index?
+        }
+    }
+
+};
+
+class GainTrampleEffect : public Effect {
+public: void use(shared_ptr<Card>& C) {
+        shared_ptr<Player> targetPlayer;
+        vector<shared_ptr<Card>> cards;
+
+        if (turn == 0) {
+            targetPlayer = p1;
+        }
+        else {
+            targetPlayer = p2;
+        }
+        if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
             return;
         }
 
-        for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+        for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
         {
-            if (targetPlayer->inPlay[i]->getType() == "Creature" && targetPlayer->inPlay[i]->getHasTrample() == false) {
+            if (targetPlayer->returnCard(2)[i]->getType() == "Creature" && targetPlayer->returnCard(2)[i]->getHasTrample() == false) {
                 cout << BOLDRED << "Index:" << i << " " << RESET;
-                targetPlayer->inPlay[i]->printInfo();
-                cards.push_back(targetPlayer->inPlay[i]);
+                targetPlayer->returnCard(2)[i]->printInfo();
+                cards.push_back(targetPlayer->returnCard(2)[i]);
             }
         }
 
@@ -985,11 +1000,11 @@ public:
     }
 
 
-    };                              
+};
 
-    class LoseGreenTrampleEffect : public Effect {
-        //bunu sadece green için yap.
-    public: void use(shared_ptr<Card>& C) {
+class LoseGreenTrampleEffect : public Effect {
+    //bunu sadece green için yap.
+public: void use(shared_ptr<Card>& C) {
         shared_ptr<Player> targetPlayer;
         vector<shared_ptr<Card>> cards;
 
@@ -999,16 +1014,16 @@ public:
         else {
             targetPlayer = p1;
         }
-        if (targetPlayer->inPlay.size() < 1) {//////////////////??
+        if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
             return;
         }
 
-        for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+        for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
         {
-            if (targetPlayer->inPlay[i]->getType() == "Creature" && targetPlayer->inPlay[i]->getHasTrample() == true && targetPlayer->inPlay[i]->getColor()=="Green") {
+            if (targetPlayer->returnCard(2)[i]->getType() == "Creature" && targetPlayer->returnCard(2)[i]->getHasTrample() == true && targetPlayer->returnCard(2)[i]->getColor()=="Green") {
                 cout << BOLDRED << "Index:" << i << " " << RESET;
-                targetPlayer->inPlay[i]->printInfo();
-                cards.push_back(targetPlayer->inPlay[i]);
+                targetPlayer->returnCard(2)[i]->printInfo();
+                cards.push_back(targetPlayer->returnCard(2)[i]);
             }
             else {
                 return; //? başka adıma mı atlanmalı
@@ -1027,367 +1042,363 @@ public:
         }
     }
 
-    };                          
+};
 
-    class LoseFirstStrikeEffect : public Effect {
+class LoseFirstStrikeEffect : public Effect {
 
 public: void use(shared_ptr<Card>& C) {
-            shared_ptr<Player> targetPlayer;
-            vector<shared_ptr<Card>> cards;
+        shared_ptr<Player> targetPlayer;
+        vector<shared_ptr<Card>> cards;
 
-            if (turn == 0) {
-                targetPlayer = p2;
-            }
-            else {
-                targetPlayer = p1;
-            }
-            if (targetPlayer->inPlay.size() < 1) {//////////////////??
-                return;
-            }
-
-            for (int i = 0; i < targetPlayer->inPlay.size(); i++)
-            {
-                if (targetPlayer->inPlay[i]->getType() == "Creature"&& targetPlayer->inPlay[i]->getHasFirstStrike() == true) {
-                    cout << BOLDRED << "Index:" << i << " " << RESET;
-                    targetPlayer->inPlay[i]->printInfo();
-                    cards.push_back(targetPlayer->inPlay[i]);
-                }
-            }
-
-            int selectionIndex;
-            cout << "Please enter creature index of which you want to remove its first strike." << endl;
-            cin >> selectionIndex;
-
-            if (selectionIndex >= 0 && selectionIndex < cards.size()) {
-                cards[selectionIndex]->setFirstStrike(false);
-            }
-            else {
-                return; //"please enter a valid index?"
-            }
+        if (turn == 0) {
+            targetPlayer = p2;
         }
-    };
+        else {
+            targetPlayer = p1;
+        }
+        if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
+            return;
+        }
 
-    class LandCard : public Card {
-    protected:
-        string mana;
-        bool isTapped;
-        std::shared_ptr<Player> p1;
-        bool isPlayed;
-
-    public:
-        LandCard(string name, string type, string mana, std::shared_ptr<Player> p1) :Card(name, type)
+        for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
         {
-            this->mana = mana;
-            isTapped = false;
-            this->p1 = p1;
-            isPlayed = true;
-        }
-        LandCard() :Card()
-        {
-            mana = "no mana ";
-            isTapped = false;
-
-        }
-        void printInfo()
-        {
-            cout << name << " " << type << " " << mana;
-        }
-        void Tap()
-        {
-            isTapped = true;
-        }
-
-        void Untap()
-        {
-            isTapped = false;
-            p1->SetManaToZero();
-        }
-
-        void Play()
-        {   //player classında activate ile çağrılıyor.
-            Tap();
-            isPlayed = true;
-            p1->setManaVector(getMana());
-        }
-
-        bool getStatus()
-        {
-            return isTapped;
-        }
-
-        string getType()
-        {
-            return type;
-        }
-
-        string getMana()
-        {
-            return mana;
-        }
-
-        bool isAlreadyPlayed()
-        {
-            return isPlayed;
-        }
-    };
-
-    class CreatureCard : public Card {
-    protected:
-        int attackPower;
-        int maxHP;
-        int maxAttack;
-        int hp;
-        bool hasFirstStrike;
-        bool hasTrample;
-        string manaCost;
-        string color;
-        bool isTapped;
-        std::shared_ptr<Player> p1;
-    public:
-
-        CreatureCard() :Card() {
-            attackPower = 0;
-            manaCost = "null cost";
-            color = "no color";
-            hp = 0;
-            maxHP = hp;
-            maxAttack = attackPower;
-            isTapped = false;
-        }
-
-        CreatureCard(string name, string type, int attackPower, string manaCost, string color, int hp, std::shared_ptr<Player> p1) :Card(name, type)
-        {
-            this->attackPower = attackPower;
-            this->manaCost = manaCost;
-            this->color = color;
-            this->hp = hp;
-            maxHP = hp;
-            maxAttack = attackPower;
-            isTapped = false;
-            this->p1 = p1;
-
-            if (name == "Angry Bear" || name == "Werewolf")
-            {
-                hasTrample = true;
-                hasFirstStrike = false;
-            }
-
-            else if (name == "White Knight" || name == "Black Knight")
-            {
-                hasFirstStrike = true;
-                hasTrample = false;
+            if (targetPlayer->returnCard(2)[i]->getType() == "Creature"&& targetPlayer->returnCard(2)[i]->getHasFirstStrike() == true) {
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                targetPlayer->returnCard(2)[i]->printInfo();
+                cards.push_back(targetPlayer->returnCard(2)[i]);
             }
         }
 
-        int getHp()
+        int selectionIndex;
+        cout << "Please enter creature index of which you want to remove its first strike." << endl;
+        cin >> selectionIndex;
+
+        if (selectionIndex >= 0 && selectionIndex < cards.size()) {
+            cards[selectionIndex]->setFirstStrike(false);
+        }
+        else {
+            return; //"please enter a valid index?"
+        }
+    }
+};
+
+class LandCard : public Card {
+protected:
+    string mana;
+    bool isTapped;
+    std::shared_ptr<Player> p1;
+    bool isPlayed;
+
+public:
+    LandCard(string name, string type, string mana, std::shared_ptr<Player> p1) :Card(name, type)
+    {
+        this->mana = mana;
+        isTapped = false;
+        this->p1 = p1;
+        isPlayed = true;
+    }
+    LandCard() :Card()
+    {
+        mana = "no mana ";
+        isTapped = false;
+
+    }
+    void printInfo()
+    {
+        cout << name << " " << type << " " << mana;
+    }
+    void Tap()
+    {
+        isTapped = true;
+    }
+
+    void Untap()
+    {
+        isTapped = false;
+        p1->SetManaToZero();
+    }
+
+    void Play()
+    {   //player classında activate ile çağrılıyor.
+        Tap();
+        isPlayed = true;
+        p1->setManaVector(getMana());
+    }
+
+    bool getStatus()
+    {
+        return isTapped;
+    }
+
+    string getType()
+    {
+        return type;
+    }
+
+    string getMana()
+    {
+        return mana;
+    }
+
+    bool isAlreadyPlayed()
+    {
+        return isPlayed;
+    }
+};
+
+class CreatureCard : public Card {
+protected:
+    int attackPower;
+    int maxHP;
+    int maxAttack;
+    int hp;
+    bool hasFirstStrike;
+    bool hasTrample;
+    string manaCost;
+    string color;
+    bool isTapped;
+    std::shared_ptr<Player> p1;
+public:
+
+    CreatureCard() :Card() {
+        attackPower = 0;
+        manaCost = "null cost";
+        color = "no color";
+        hp = 0;
+        maxHP = hp;
+        maxAttack = attackPower;
+        isTapped = false;
+    }
+
+    CreatureCard(string name, string type, int attackPower, string manaCost, string color, int hp, std::shared_ptr<Player> p1) :Card(name, type)
+    {
+        this->attackPower = attackPower;
+        this->manaCost = manaCost;
+        this->color = color;
+        this->hp = hp;
+        maxHP = hp;
+        maxAttack = attackPower;
+        isTapped = false;
+        this->p1 = p1;
+
+        if (name == "Angry Bear" || name == "Werewolf")
         {
-            return hp;
+            hasTrample = true;
+            hasFirstStrike = false;
         }
 
-        int getMaxHP()
+        else if (name == "White Knight" || name == "Black Knight")
         {
-            return maxHP;
+            hasFirstStrike = true;
+            hasTrample = false;
         }
+    }
 
-       int getMaxAttack()
-        {
-            return maxAttack;
-        }
+    int getHp()
+    {
+        return hp;
+    }
 
-        int getAttackPower()
-        {
-            return attackPower;
-        }
+    int getMaxHP()
+    {
+        return maxHP;
+    }
+
+    int getMaxAttack()
+    {
+        return maxAttack;
+    }
+
+    int getAttackPower()
+    {
+        return attackPower;
+    }
 
 
-        void setHp(int a)
-        {
-            hp = a;
-        }
+    void setHp(int a)
+    {
+        hp = a;
+    }
 
-        void setAttack(int a)
-        {
-            attackPower = a;
-        }
+    void setAttack(int a)
+    {
+        attackPower = a;
+    }
 
-        void Tap()
-        {
-            isTapped = true;
-        }
-        void Play()
-        {
+    void Tap()
+    {
+        isTapped = true;
+    }
+    void Play()
+    {
 
-        }
+    }
 
-        void printInfo()
-        {
-            cout << name << " " << type << " " << attackPower << " " << manaCost << " " << color << " " << hp;
-        }
+    void printInfo()
+    {
+        cout << name << " " << type << " " << attackPower << " " << manaCost << " " << color << " " << hp;
+    }
 
-        string getType()
-        {
-            return type;
-        }
-        string getManaCost()
-        {
-            return manaCost;
-        }
-        string getColor()
-        {
-            return color;
-        }
+    string getType()
+    {
+        return type;
+    }
+    string getManaCost()
+    {
+        return manaCost;
+    }
+    string getColor()
+    {
+        return color;
+    }
 
-        bool getHasFirstStrike()
-        {
-            return hasFirstStrike;
-        }
+    bool getHasFirstStrike()
+    {
+        return hasFirstStrike;
+    }
 
-        bool getHasTrample()
-        {
-            return hasTrample;
-        }
+    bool getHasTrample()
+    {
+        return hasTrample;
+    }
 
-         void setFirstStrike(bool a)
-        {
-             hasFirstStrike = a;
-        }
-         void setTrample(bool a)
-        {
-             hasTrample = a;
-        }
+    void setFirstStrike(bool a)
+    {
+        hasFirstStrike = a;
+    }
+    void setTrample(bool a)
+    {
+        hasTrample = a;
+    }
 
-    };
+};
 
-    class EnchantmentCard : public Card {
-    protected:
-        string manaCost;
-        string color;
-        Effect* effect;
-        std::shared_ptr<Player> p1;
-    public:
+class EnchantmentCard : public Card {
+protected:
+    string manaCost;
+    string color;
+    Effect* effect;
+    std::shared_ptr<Player> p1;
+public:
 
-        EnchantmentCard() :Card()
-        {
-            manaCost = "no cost";
-            color = "no color";
-        }
+    EnchantmentCard() :Card()
+    {
+        manaCost = "no cost";
+        color = "no color";
+    }
 
-        EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect* effect) :Card(name, type)
-        {
+    EnchantmentCard(string name, string type, string manaCost, string color, std::shared_ptr<Player> p1, Effect* effect) :Card(name, type)
+    {
 
-            this->manaCost = manaCost;
-            this->effect = effect;
-            this->color = color;
-            this->p1 = p1;
-        }
+        this->manaCost = manaCost;
+        this->effect = effect;
+        this->color = color;
+        this->p1 = p1;
+    }
 
-        void ActivateEnchantment()
-        {
-            //Effect'i her neyse buraya girilecek.
-        }
+    void ActivateEnchantment()
+    {
+        //Effect'i her neyse buraya girilecek.
+    }
 
-        void Play()
-        {
-            ActivateEnchantment();
+    void Play()
+    {
+        ActivateEnchantment();
 
-        }
+    }
 
-        string getType()
-        {
-            return type;
-        }
+    string getType()
+    {
+        return type;
+    }
 
-        string getManaCost()
-        {
-            return manaCost;
-        }
+    string getManaCost()
+    {
+        return manaCost;
+    }
 
-        void printInfo()
-        {
-            cout << name << " " << type << " " << manaCost << " " << color;
-        }
+    void printInfo()
+    {
+        cout << name << " " << type << " " << manaCost << " " << color;
+    }
 
-    };
+};
 
-    class SorceryCard : public Card {
-    protected:
-        string manaCost;
-        string color;
-        Effect* effect;
-    public:
-        std::shared_ptr<Player> p1;
-        SorceryCard(string name, string type, string manaCost, string color, shared_ptr<Player> p1, Effect* effect) :Card(name, type)
-        {
+class SorceryCard : public Card {
+protected:
+    string manaCost;
+    string color;
+    Effect* effect;
+public:
+    std::shared_ptr<Player> p1;
+    SorceryCard(string name, string type, string manaCost, string color, shared_ptr<Player> p1, Effect* effect) :Card(name, type)
+    {
 
-            this->manaCost = manaCost;
-            this->effect = effect;
-            this->color = color;
-            this->p1 = p1;
-        }
-        SorceryCard() :Card()
-        {
-            manaCost = "no cost";
-            color = "no color";
-        }
+        this->manaCost = manaCost;
+        this->effect = effect;
+        this->color = color;
+        this->p1 = p1;
+    }
+    SorceryCard() :Card()
+    {
+        manaCost = "no cost";
+        color = "no color";
+    }
 
-        void Play()
-        {
-            //activate ability. effect falan
-            cout << "sorcery is played" << endl;
-        }
+    void Play()
+    {
+        //activate ability. effect falan
+        cout << "sorcery is played" << endl;
+    }
 
-        string getType()
-        {
-            return type;
-        }
+    string getType()
+    {
+        return type;
+    }
 
-        string getManaCost()
-        {
-            return manaCost;
-        }
-        void printInfo()
-        {
-            cout << name << " " << type << " " << manaCost << " " << color;
-        }
+    string getManaCost()
+    {
+        return manaCost;
+    }
+    void printInfo()
+    {
+        cout << name << " " << type << " " << manaCost << " " << color;
+    }
 
-    };
+};
 void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card> defendingCreature, shared_ptr<Player >& defendingPlayer)
 {
     /*
     shared_ptr<Player> targetPlayer;
     vector<shared_ptr<Card>> cards;
-
     if (turn == 0) {
         targetPlayer = p1;
     }
     else {
         targetPlayer = p2;
     }
-    if (targetPlayer->inPlay.size() < 1) {//////////////////??
+    if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
         return;
     }
-
-    for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+    for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
     {
-        if (targetPlayer->inPlay[i]->getType() == "Creature") {
-            cards.push_back(targetPlayer->inPlay[i]);
+        if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
+            cards.push_back(targetPlayer->returnCard(2)[i]);
         }
     }
-
     if (turn == 0) {
         targetPlayer = p1;
     }
     else {
         targetPlayer = p2;
     }
-    if (targetPlayer->inPlay.size() < 1) {//////////////////??
+    if (targetPlayer->returnCard(2).size() < 1) {//////////////////??
         return;
     }
-
-    for (int i = 0; i < targetPlayer->inPlay.size(); i++)
+    for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
     {
-        if (targetPlayer->inPlay[i]->getType() == "Creature") {
-            cards.push_back(targetPlayer->inPlay[i]);
+        if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
+            cards.push_back(targetPlayer->returnCard(2)[i]);
         }
     }
     */
@@ -1527,423 +1538,424 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
     }
 
 }
-    bool isGameFinished = false;
-    void turnLoop() {
-        shared_ptr<Player> ourPlayer;
-        if (turn == 0) {
-            cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "1 ---" << RESET << endl;
-            ourPlayer = p1;
-        }
-        else if (turn == 1) {
-            cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "2 ---" << RESET << endl;
-            ourPlayer = p2;
-        }
+bool isGameFinished = false;
+void turnLoop() {
+    shared_ptr<Player> ourPlayer;
+    if (turn == 0) {
+        cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "1 ---" << RESET << endl;
+        ourPlayer = p1;
+    }
+    else if (turn == 1) {
+        cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "2 ---" << RESET << endl;
+        ourPlayer = p2;
+    }
 
-        ////Draw
-        cout << GREEN << "Draw Phase" << RESET << endl;
-        shared_ptr<Card> selection;
+    ////Draw
+    cout << GREEN << "Draw Phase" << RESET << endl;
+    shared_ptr<Card> selection;
 
-        //cout <<ourPlayer->getHandElementCount() << endl;
+    //cout <<ourPlayer->getHandElementCount() << endl;
 
-        if (ourPlayer->getLibraryElementCount() > 0) {
-            if (ourPlayer->getHandElementCount() < 7) {
-                selection = (ourPlayer->getAndPrintLibraryVector());
-                ourPlayer->drawCard(selection);
-            }
-            else {
-
-            }
+    if (ourPlayer->getLibraryElementCount() > 0) {
+        if (ourPlayer->getHandElementCount() < 7) {
+            srand(time(0));
+            cout << rand() % ourPlayer->returnCard(0).size() << endl;
+            ourPlayer->drawCard(ourPlayer->returnCard(0)[rand() % ourPlayer->returnCard(0).size()]);
         }
         else {
-            //Lose The Game
-            isGameFinished = true;
+
+        }
+    }
+    else {
+        //Lose The Game
+        isGameFinished = true;
+    }
+
+    ////Untap
+    ourPlayer->untapAllinPlay();
+
+    ////Play
+    bool isPlayedLandCard = false;
+    cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
+    string answer;
+    cin >> answer;
+
+    if (answer == "Y" || answer == "y") {
+        selection = (ourPlayer->getAndPrintHandVector(true));
+        ourPlayer->playItemAtHand(selection);
+        isPlayedLandCard = true;
+    }
+
+    bool stop = false;
+    while (!stop) {
+        selection = (ourPlayer->getAndPrintHandVector(false));
+        if (selection == nullptr) {
+            stop = true;
+        }
+        else {
+            ourPlayer->playItemAtHand(selection);
+        }
+    }
+
+    //destroy
+    DestroyEffect d;
+    // d.use(card);
+
+    ////Tap
+    ourPlayer->tapSelectedLandCards();
+
+    ////Combat
+    shared_ptr<Player> targetPlayer;
+
+    if (turn == 0) {
+        targetPlayer = p2;
+    }
+    else if (turn == 1) {
+        targetPlayer = p1;
+    }
+
+    vector<shared_ptr<Card>> ourCards, otherCards;
+    vector<shared_ptr<Card>> usedAttackCards, usedDefendCards;
+
+    int attackCardCount=0;
+
+    int i = 0, number = 0;
+
+    while (i < ourPlayer->returnCard(2).size())
+    {
+        if (ourPlayer->returnCard(2)[i]->getType() == "Creature") {
+            ourCards.push_back(ourPlayer->returnCard(2)[i]);
+            number++;
+        }
+        i++;
+    }
+
+    i = 0, number = 0;
+
+    while (i < targetPlayer->returnCard(2).size())
+    {
+        if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
+            otherCards.push_back(targetPlayer->returnCard(2)[i]);
+            number++;
+        }
+        i++;
+    }
+
+    vector<shared_ptr<Card>> inPlayCards = ourPlayer->returnCard(2);
+    vector<shared_ptr<Card>> targetinPlayCards = targetPlayer->returnCard(2);
+    if(ourCards.size()>0) {
+        int s = -1;
+        while ((s >= 0 && s < ourCards.size()) || s == -1) {
+            int x = 0;
+            for (int j = 0; j < inPlayCards.size(); j++) {
+                if (inPlayCards[j]->getType() == "Creature") {
+                    cout << BOLDRED << "Index:" << x << " " << RESET << inPlayCards[j]->getName() << " " << endl;
+                    x++;
+                }
+            }
+
+            cout << BOLDMAGENTA << "Please enter an index number for a creature." << RESET << endl;
+            cin >> s;
+            //if ((s >= 0 && s < ourCards.size())) {
+            if (find(ourCards.begin(), ourCards.end(), ourCards[s]) != ourCards.end()) {
+                usedAttackCards.push_back(ourCards[s]);
+                ourCards.erase(remove(ourCards.begin(), ourCards.end(), ourCards[s]), ourCards.end());
+                inPlayCards.erase(remove(inPlayCards.begin(), inPlayCards.end(), ourCards[s]), inPlayCards.end());
+                attackCardCount++;
+            }
+            //}
+        }
+    }
+    if(otherCards.size()>0) {
+        int s = -1;
+        int defendCardCount = -1;
+
+        while (!(defendCardCount >= 0 && defendCardCount < attackCardCount) || defendCardCount == -1) {
+            cout << "How many defending card do you want to use? (Max: " << attackCardCount << ")" << endl;
+            cin >> defendCardCount;
+        }
+        int x = 0;
+        for (int j = 0; j < targetinPlayCards.size(); j++) {
+            if (targetinPlayCards[j]->getType() == "Creature") {
+                cout << BOLDRED << "Index:" << x << " " << RESET << targetinPlayCards[j]->getName() << " " << endl;
+                x++;
+            }
         }
 
-        ////Untap
-        ourPlayer->untapAllinPlay();
+        int sToDefend = -1;
+        while ((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1) {
+            int x = 0;
+            for (int j = 0; j < targetinPlayCards.size(); j++) {
+                if (targetinPlayCards[j]->getType() == "Creature") {
+                    cout << BOLDRED << "Index:" << x << " " << RESET << targetinPlayCards[j]->getName() << " "
+                         << endl;
+                    x++;
+                }
+            }
 
-        ////Play
-        bool isPlayedLandCard = false;
+            cout << BOLDMAGENTA << "Please enter an index to defend." << RESET << endl;
+            cin >> sToDefend;
+
+            if (find(otherCards.begin(), otherCards.end(), otherCards[s]) != otherCards.end()) {
+                usedDefendCards.push_back(otherCards[s]);
+                otherCards.erase(remove(otherCards.begin(), otherCards.end(), otherCards[s]), otherCards.end());
+                targetinPlayCards.erase(remove(targetinPlayCards.begin(), targetinPlayCards.end(), otherCards[s]),
+                                        targetinPlayCards.end());
+                defendCardCount++;
+            }
+        }
+    }
+
+    if(usedAttackCards.size()>usedDefendCards.size()){
+        for(int i = 0;i<usedAttackCards.size();i++){
+            if(i<usedDefendCards.size()){
+                combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
+            } else {
+                combat(usedAttackCards[i], ourPlayer, nullptr, targetPlayer);
+            }
+        }
+    } else if(usedAttackCards.size()==usedDefendCards.size()){
+        for(int i = 0;i<usedAttackCards.size();i++){
+            combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
+        }
+    }
+
+
+    ////Play2
+    if(isPlayedLandCard){
+        cout << BOLDRED << "You can't play land card anymore for this turn."  << RESET << endl;
+    } else {
         cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
-        string answer;
         cin >> answer;
 
         if (answer == "Y" || answer == "y") {
             selection = (ourPlayer->getAndPrintHandVector(true));
             ourPlayer->playItemAtHand(selection);
-            isPlayedLandCard = true;
         }
+    }
+    ////Cleanup
+    for(int i = 0;i<ourPlayer->getMana().size();i++){
+        ourPlayer->getMana()[i] = 0;
+    }
+}
 
-        bool stop = false;
-        while (!stop) {
-            selection = (ourPlayer->getAndPrintHandVector(false));
-            if (selection == nullptr) {
-                stop = true;
+DestroyEffect destroyEffect;
+DealDamageEffect dealDamageEffect;
+DealDamageToAllEffect dealDamageToAllEffect;
+GainStatsEffect gainStatsEffect;
+ReturnCreatureToLifeEffect returnCreatureToLife;
+GainTrampleEffect gainTrampleEffect;
+LoseGreenTrampleEffect loseGreenTrampleEffect;
+LoseFirstStrikeEffect loseFirstStrikeEffect;
+
+void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
+    shared_ptr<Player> player1;
+    shared_ptr<Player> player2;
+    player1 = p1;
+    player2 = p2;
+
+    ////Creature Cards
+    shared_ptr<Card>C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
+    shared_ptr<Card>C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
+    shared_ptr<Card>C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
+    shared_ptr<Card>C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
+    shared_ptr<Card>C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
+    shared_ptr<Card>C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
+    shared_ptr<Card>C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
+    shared_ptr<Card>C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player1);
+    shared_ptr<Card>C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player1);
+    shared_ptr<Card>C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player1);
+
+    ////Sorcery Cards
+    shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1, &destroyEffect);
+    shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1, &dealDamageEffect);
+    shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, &destroyEffect);
+    shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, &destroyEffect);
+
+    ////Enchantment Cards
+    shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1, &gainTrampleEffect);
+    shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1, &gainStatsEffect);
+    shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "White", "1W", player1, &gainStatsEffect);
+
+    //Land Cards
+    shared_ptr<Card>C18 = make_shared<LandCard>("Plains", "Land", "W", player1);
+    shared_ptr<Card>C19 = make_shared<LandCard>("Plains", "Land", "W", player1);
+    shared_ptr<Card>C20 = make_shared<LandCard>("Plains", "Land", "W", player1);
+    shared_ptr<Card>C21 = make_shared<LandCard>("Plains", "Land", "W", player1);
+    shared_ptr<Card>C22 = make_shared<LandCard>("Plains", "Land", "W", player1);
+    shared_ptr<Card>C23 = make_shared<LandCard>("Forest", "Land", "G", player1);
+    shared_ptr<Card>C24 = make_shared<LandCard>("Forest", "Land", "G", player1);
+    shared_ptr<Card>C25 = make_shared<LandCard>("Forest", "Land", "G", player1);
+    shared_ptr<Card>C26 = make_shared<LandCard>("Island", "Land", "L", player1);
+
+    p1->addCardToDeck(C1);
+    p1->addCardToDeck(C2);
+    p1->addCardToDeck(C3);
+    p1->addCardToDeck(C4);
+    p1->addCardToDeck(C5);
+    p1->addCardToDeck(C6);
+    p1->addCardToDeck(C7);
+    p1->addCardToDeck(C8);
+    p1->addCardToDeck(C9);
+    p1->addCardToDeck(C10);
+    p1->addCardToDeck(C11);
+    p1->addCardToDeck(C12);
+    p1->addCardToDeck(C13);
+    p1->addCardToDeck(C14);
+    p1->addCardToDeck(C15);
+    p1->addCardToDeck(C16);
+    p1->addCardToDeck(C17);
+    p1->addCardToDeck(C18);
+    p1->addCardToDeck(C19);
+    p1->addCardToDeck(C20);
+    p1->addCardToDeck(C21);
+    p1->addCardToDeck(C22);
+    p1->addCardToDeck(C23);
+    p1->addCardToDeck(C24);
+    p1->addCardToDeck(C25);
+    p1->addCardToDeck(C26);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Creature Cards
+    C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
+    C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
+    C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
+    C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player2);
+    C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player2);
+    C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player2);
+    C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player2);
+    C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player2);
+    C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player2);
+    C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player2);
+
+    //Sorcery Cards
+    C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2, &returnCreatureToLife);
+    C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2, &dealDamageToAllEffect);
+    C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, &destroyEffect);
+    C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, &destroyEffect);
+
+    //Enchantment Card
+    C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2, &gainStatsEffect);
+    C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2, &loseGreenTrampleEffect);
+    C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2, &loseFirstStrikeEffect);
+
+    //Land Card
+    C18 = make_shared<LandCard>("Swamp", "Land", "B", player2);
+    C19 = make_shared<LandCard>("Swamp", "Land", "B", player2);
+    C20 = make_shared<LandCard>("Swamp", "Land", "B", player2);
+    C21 = make_shared<LandCard>("Swamp", "Land", "B", player2);
+    C22 = make_shared<LandCard>("Swamp", "Land", "B", player2);
+    C23 = make_shared<LandCard>("Mountain", "Land", "R", player2);
+    C24 = make_shared<LandCard>("Mountain", "Land", "R", player2);
+    C25 = make_shared<LandCard>("Mountain", "Land", "R", player2);
+    C26 = make_shared<LandCard>("Island", "Land", "L", player2);
+
+    p2->addCardToDeck(C1);
+    p2->addCardToDeck(C2);
+    p2->addCardToDeck(C3);
+    p2->addCardToDeck(C4);
+    p2->addCardToDeck(C5);
+    p2->addCardToDeck(C6);
+    p2->addCardToDeck(C7);
+    p2->addCardToDeck(C8);
+    p2->addCardToDeck(C9);
+    p2->addCardToDeck(C10);
+    p2->addCardToDeck(C11);
+    p2->addCardToDeck(C12);
+    p2->addCardToDeck(C13);
+    p2->addCardToDeck(C14);
+    p2->addCardToDeck(C15);
+    p2->addCardToDeck(C16);
+    p2->addCardToDeck(C17);
+    p2->addCardToDeck(C18);
+    p2->addCardToDeck(C19);
+    p2->addCardToDeck(C20);
+    p2->addCardToDeck(C21);
+    p2->addCardToDeck(C22);
+    p2->addCardToDeck(C23);
+    p2->addCardToDeck(C24);
+    p2->addCardToDeck(C25);
+    p2->addCardToDeck(C26);
+    //////////////////////////////////////////////////////////////////////////////////////////
+}
+
+
+
+
+
+void playGame() {
+
+    while (!isGameFinished) {
+        turnLoop();
+        turn = (turn == 0) ? turn = 1 : turn = 0;
+    }
+}
+
+void setupGame() {
+    p1 = make_shared<Player>();
+    p2 = make_shared<Player>();
+
+    for(int i = 0;i<8;i++){
+        switch (i){
+            case 0: {
+                DestroyEffect destroyEffect;
+                //allEffects.push_back(destroyEffect);
+                break;
             }
-            else {
-                ourPlayer->playItemAtHand(selection);
+            case 1: {
+                DealDamageEffect dealDamageEffect;
+                //allEffects.push_back(dealDamageEffect);
+                break;
             }
-        }
-
-        //destroy 
-        DestroyEffect d;
-       // d.use(card);
-
-        ////Tap
-        ourPlayer->tapSelectedLandCards();
-
-        ////Combat
-        shared_ptr<Player> targetPlayer;
-
-        if (turn == 0) {
-            targetPlayer = p2;
-        }
-        else if (turn == 1) {
-            targetPlayer = p1;
-        }
-
-        vector<shared_ptr<Card>> ourCards, otherCards;
-        vector<shared_ptr<Card>> usedAttackCards, usedDefendCards;
-
-        int attackCardCount=0;
-
-        int i = 0, number = 0;
-
-        while (i < ourPlayer->inPlay.size())
-        {
-            if (ourPlayer->inPlay[i]->getType() == "Creature") {
-                ourCards.push_back(ourPlayer->inPlay[i]);
-                number++;
+            case 2:{
+                DealDamageToAllEffect dealDamageToAllEffect;
+                //allEffects.push_back(dealDamageToAllEffect);
+                break;
             }
-            i++;
-        }
-
-        i = 0, number = 0;
-
-        while (i < targetPlayer->inPlay.size())
-        {
-            if (targetPlayer->inPlay[i]->getType() == "Creature") {
-                otherCards.push_back(targetPlayer->inPlay[i]);
-                number++;
+            case 3:{
+                GainStatsEffect gainStatsEffect;
+                //allEffects.push_back(gainStatsEffect);
+                break;
             }
-            i++;
-        }
-
-        vector<shared_ptr<Card>> inPlayCards = ourPlayer->inPlay;
-        vector<shared_ptr<Card>> targetinPlayCards = targetPlayer->inPlay;
-        if(ourCards.size()>0) {
-            int s = -1;
-            while ((s >= 0 && s < ourCards.size()) || s == -1) {
-                int x = 0;
-                for (int j = 0; j < inPlayCards.size(); j++) {
-                    if (inPlayCards[j]->getType() == "Creature") {
-                        cout << BOLDRED << "Index:" << x << " " << RESET << inPlayCards[j]->getName() << " " << endl;
-                        x++;
-                    }
-                }
-
-                cout << BOLDMAGENTA << "Please enter an index number for a creature." << RESET << endl;
-                cin >> s;
-                //if ((s >= 0 && s < ourCards.size())) {
-                if (find(ourCards.begin(), ourCards.end(), ourCards[s]) != ourCards.end()) {
-                    usedAttackCards.push_back(ourCards[s]);
-                    ourCards.erase(remove(ourCards.begin(), ourCards.end(), ourCards[s]), ourCards.end());
-                    inPlayCards.erase(remove(inPlayCards.begin(), inPlayCards.end(), ourCards[s]), inPlayCards.end());
-                    attackCardCount++;
-                }
-                //}
+            case 4:{
+                ReturnCreatureToLifeEffect returnCreatureToLifeEffect;
+                //allEffects.push_back(returnCreatureToLifeEffect);
+                break;
             }
-        }
-        if(otherCards.size()>0) {
-            int s = -1;
-            int defendCardCount = -1;
-
-            while (!(defendCardCount >= 0 && defendCardCount < attackCardCount) || defendCardCount == -1) {
-                cout << "How many defending card do you want to use? (Max: " << attackCardCount << ")" << endl;
-                cin >> defendCardCount;
+            case 5:{
+                GainTrampleEffect gainTrampleEffect;
+                //allEffects.push_back(gainTrampleEffect);
+                break;
             }
-            int x = 0;
-            for (int j = 0; j < targetinPlayCards.size(); j++) {
-                if (targetinPlayCards[j]->getType() == "Creature") {
-                    cout << BOLDRED << "Index:" << x << " " << RESET << targetinPlayCards[j]->getName() << " " << endl;
-                    x++;
-                }
+            case 6:{
+                LoseGreenTrampleEffect loseGreenTrampleEffect;
+                //allEffects.push_back(loseGreenTrampleEffect);
+                break;
             }
-
-            int sToDefend = -1;
-            while ((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1) {
-                int x = 0;
-                for (int j = 0; j < targetinPlayCards.size(); j++) {
-                    if (targetinPlayCards[j]->getType() == "Creature") {
-                        cout << BOLDRED << "Index:" << x << " " << RESET << targetinPlayCards[j]->getName() << " "
-                             << endl;
-                        x++;
-                    }
-                }
-
-                cout << BOLDMAGENTA << "Please enter an index to defend." << RESET << endl;
-                cin >> sToDefend;
-
-                if (find(otherCards.begin(), otherCards.end(), otherCards[s]) != otherCards.end()) {
-                    usedDefendCards.push_back(otherCards[s]);
-                    otherCards.erase(remove(otherCards.begin(), otherCards.end(), otherCards[s]), otherCards.end());
-                    targetinPlayCards.erase(remove(targetinPlayCards.begin(), targetinPlayCards.end(), otherCards[s]),
-                                            targetinPlayCards.end());
-                    defendCardCount++;
-                }
+            case 7:{
+                LoseFirstStrikeEffect loseFirstStrikeEffect;
+                //allEffects.push_back(loseFirstStrikeEffect);
+                break;
             }
-        }
-
-        if(usedAttackCards.size()>usedDefendCards.size()){
-            for(int i = 0;i<usedAttackCards.size();i++){
-                if(i<usedDefendCards.size()){
-                    combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
-                } else {
-                    combat(usedAttackCards[i], ourPlayer, nullptr, targetPlayer);
-                }
-            }
-        } else if(usedAttackCards.size()==usedDefendCards.size()){
-            for(int i = 0;i<usedAttackCards.size();i++){
-                combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
-            }
-        }
-
-
-        ////Play2
-        if(isPlayedLandCard){
-            cout << BOLDRED << "You can't play land card anymore for this turn."  << RESET << endl;
-        } else {
-            cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
-            cin >> answer;
-
-            if (answer == "Y" || answer == "y") {
-                selection = (ourPlayer->getAndPrintHandVector(true));
-                ourPlayer->playItemAtHand(selection);
-            }
-        }
-        ////Cleanup
-        for(int i = 0;i<ourPlayer->manaCount.size();i++){
-            ourPlayer->manaCount[i] = 0;
         }
     }
 
-    DestroyEffect destroyEffect;
-    DealDamageEffect dealDamageEffect;
-    DealDamageToAllEffect dealDamageToAllEffect;
-    GainStatsEffect gainStatsEffect;
-    ReturnCreatureToLifeEffect returnCreatureToLife;
-    GainTrampleEffect gainTrampleEffect;
-    LoseGreenTrampleEffect loseGreenTrampleEffect;
-    LoseFirstStrikeEffect loseFirstStrikeEffect;
+    createDecks(p1, p2);
 
-    void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
-        shared_ptr<Player> player1;
-        shared_ptr<Player> player2;
-        player1 = p1;
-        player2 = p2;
+    selectRandomCardsFromLibraryToPutIntoHand(p1);
+    selectRandomCardsFromLibraryToPutIntoHand(p2);
 
-        ////Creature Cards
-        shared_ptr<Card>C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
-        shared_ptr<Card>C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
-        shared_ptr<Card>C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player1);
-        shared_ptr<Card>C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
-        shared_ptr<Card>C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player1);
-        shared_ptr<Card>C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
-        shared_ptr<Card>C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player1);
-        shared_ptr<Card>C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player1);
-        shared_ptr<Card>C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player1);
-        shared_ptr<Card>C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player1);
+    cout << "p1 hand:" << endl;
+    p1->printHand();
 
-        ////Sorcery Cards
-        shared_ptr<Card>C11 = make_shared<SorceryCard>("Disenchant", "Sorcery", "White", "1W", player1, &destroyEffect);
-        shared_ptr<Card>C12 = make_shared<SorceryCard>("Lightning Bolt", "Sorcery", "Green", "1G", player1, &dealDamageEffect);
-        shared_ptr<Card>C13 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, &destroyEffect);
-        shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "Flood", "1GW", player1, &destroyEffect);
+    cout << "p2 hand:" << endl;
+    p2->printHand();
 
-        ////Enchantment Cards
-        shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "Green", "G", player1, &gainTrampleEffect);
-        shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "White", "1W", player1, &gainStatsEffect);
-        shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "White", "1W", player1, &gainStatsEffect);
+    playGame();
+}
+int main() {
+    setupGame();
 
-        //Land Cards
-        shared_ptr<Card>C18 = make_shared<LandCard>("Plains", "Land", "W", player1);
-        shared_ptr<Card>C19 = make_shared<LandCard>("Plains", "Land", "W", player1);
-        shared_ptr<Card>C20 = make_shared<LandCard>("Plains", "Land", "W", player1);
-        shared_ptr<Card>C21 = make_shared<LandCard>("Plains", "Land", "W", player1);
-        shared_ptr<Card>C22 = make_shared<LandCard>("Plains", "Land", "W", player1);
-        shared_ptr<Card>C23 = make_shared<LandCard>("Forest", "Land", "G", player1);
-        shared_ptr<Card>C24 = make_shared<LandCard>("Forest", "Land", "G", player1);
-        shared_ptr<Card>C25 = make_shared<LandCard>("Forest", "Land", "G", player1);
-        shared_ptr<Card>C26 = make_shared<LandCard>("Island", "Land", "L", player1);
-
-        p1->addCardToDeck(C1);
-        p1->addCardToDeck(C2);
-        p1->addCardToDeck(C3);
-        p1->addCardToDeck(C4);
-        p1->addCardToDeck(C5);
-        p1->addCardToDeck(C6);
-        p1->addCardToDeck(C7);
-        p1->addCardToDeck(C8);
-        p1->addCardToDeck(C9);
-        p1->addCardToDeck(C10);
-        p1->addCardToDeck(C11);
-        p1->addCardToDeck(C12);
-        p1->addCardToDeck(C13);
-        p1->addCardToDeck(C14);
-        p1->addCardToDeck(C15);
-        p1->addCardToDeck(C16);
-        p1->addCardToDeck(C17);
-        p1->addCardToDeck(C18);
-        p1->addCardToDeck(C19);
-        p1->addCardToDeck(C20);
-        p1->addCardToDeck(C21);
-        p1->addCardToDeck(C22);
-        p1->addCardToDeck(C23);
-        p1->addCardToDeck(C24);
-        p1->addCardToDeck(C25);
-        p1->addCardToDeck(C26);
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////
-
-        //Creature Cards
-        C1 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
-        C2 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
-        C3 = make_shared<CreatureCard>("Soldier", "Creature", 1, "W", "White", 1, player2);
-        C4 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player2);
-        C5 = make_shared<CreatureCard>("Armored Pegasus", "Creature", 1, "1W", "White", 2, player2);
-        C6 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player2);
-        C7 = make_shared<CreatureCard>("White Knight", "Creature", 2, "WW", "White", 2, player2);
-        C8 = make_shared<CreatureCard>("Angry Bear", "Creature", 3, "2G", "Green", 2, player2);
-        C9 = make_shared<CreatureCard>("Guard", "Creature", 2, "2WW", "White", 5, player2);
-        C10 = make_shared<CreatureCard>("Werewolf", "Creature", 4, "2GW", "Green", 6, player2);
-
-        //Sorcery Cards
-        C11 = make_shared<SorceryCard>("Reanimate", "Sorcery", "Black", "B", player2, &returnCreatureToLife);
-        C12 = make_shared<SorceryCard>("Plague", "Sorcery", "Black", "2B", player2, &dealDamageToAllEffect);
-        C13 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, &destroyEffect);
-        C14 = make_shared<SorceryCard>("Terror", "Sorcery", "Black", "1B", player2, &destroyEffect);
-
-        //Enchantment Card
-        C15 = make_shared<EnchantmentCard>("Unholy War", "Land", "Black", "1B", player2, &gainStatsEffect);
-        C16 = make_shared<EnchantmentCard>("Restrain", "Enchantment", "Red", "2R", player2, &loseGreenTrampleEffect);
-        C17 = make_shared<EnchantmentCard>("Slow", "Enchantment", "Black", "B", player2, &loseFirstStrikeEffect);
-
-        //Land Card
-        C18 = make_shared<LandCard>("Swamp", "Land", "B", player2);
-        C19 = make_shared<LandCard>("Swamp", "Land", "B", player2);
-        C20 = make_shared<LandCard>("Swamp", "Land", "B", player2);
-        C21 = make_shared<LandCard>("Swamp", "Land", "B", player2);
-        C22 = make_shared<LandCard>("Swamp", "Land", "B", player2);
-        C23 = make_shared<LandCard>("Mountain", "Land", "R", player2);
-        C24 = make_shared<LandCard>("Mountain", "Land", "R", player2);
-        C25 = make_shared<LandCard>("Mountain", "Land", "R", player2);
-        C26 = make_shared<LandCard>("Island", "Land", "L", player2);
-
-        p2->addCardToDeck(C1);
-        p2->addCardToDeck(C2);
-        p2->addCardToDeck(C3);
-        p2->addCardToDeck(C4);
-        p2->addCardToDeck(C5);
-        p2->addCardToDeck(C6);
-        p2->addCardToDeck(C7);
-        p2->addCardToDeck(C8);
-        p2->addCardToDeck(C9);
-        p2->addCardToDeck(C10);
-        p2->addCardToDeck(C11);
-        p2->addCardToDeck(C12);
-        p2->addCardToDeck(C13);
-        p2->addCardToDeck(C14);
-        p2->addCardToDeck(C15);
-        p2->addCardToDeck(C16);
-        p2->addCardToDeck(C17);
-        p2->addCardToDeck(C18);
-        p2->addCardToDeck(C19);
-        p2->addCardToDeck(C20);
-        p2->addCardToDeck(C21);
-        p2->addCardToDeck(C22);
-        p2->addCardToDeck(C23);
-        p2->addCardToDeck(C24);
-        p2->addCardToDeck(C25);
-        p2->addCardToDeck(C26);
-        //////////////////////////////////////////////////////////////////////////////////////////
-    }
-
-
-
-
-
-    void playGame() {
-
-        while (!isGameFinished) {
-            turnLoop();
-            turn = (turn == 0) ? turn = 1 : turn = 0;
-        }
-    }
-
-    void setupGame() {
-        p1 = make_shared<Player>();
-        p2 = make_shared<Player>();
-
-        for(int i = 0;i<8;i++){
-            switch (i){
-                case 0: {
-                    DestroyEffect destroyEffect;
-                    //allEffects.push_back(destroyEffect);
-                    break;
-                }
-                case 1: {
-                    DealDamageEffect dealDamageEffect;
-                    //allEffects.push_back(dealDamageEffect);
-                    break;
-                }
-                case 2:{
-                    DealDamageToAllEffect dealDamageToAllEffect;
-                    //allEffects.push_back(dealDamageToAllEffect);
-                    break;
-                }
-                case 3:{
-                    GainStatsEffect gainStatsEffect;
-                    //allEffects.push_back(gainStatsEffect);
-                    break;
-                }
-                case 4:{
-                    ReturnCreatureToLifeEffect returnCreatureToLifeEffect;
-                    //allEffects.push_back(returnCreatureToLifeEffect);
-                    break;
-                }
-                case 5:{
-                    GainTrampleEffect gainTrampleEffect;
-                    //allEffects.push_back(gainTrampleEffect);
-                    break;
-                }
-                case 6:{
-                    LoseGreenTrampleEffect loseGreenTrampleEffect;
-                    //allEffects.push_back(loseGreenTrampleEffect);
-                    break;
-                }
-                case 7:{
-                    LoseFirstStrikeEffect loseFirstStrikeEffect;
-                    //allEffects.push_back(loseFirstStrikeEffect);
-                    break;
-                }
-            }
-        }
-
-        createDecks(p1, p2);
-
-        selectRandomCardsFromLibraryToPutIntoHand(p1);
-        selectRandomCardsFromLibraryToPutIntoHand(p2);
-
-        cout << "p1 hand:" << endl;
-        p1->printHand();
-
-        cout << "p2 hand:" << endl;
-        p2->printHand();
-
-        playGame();
-    }
-    int main() {
-        setupGame();
-
-        return 0;
-    }
+    return 0;
+}
