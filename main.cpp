@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <curses.h>
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -68,6 +69,7 @@ public:
         isTapped = false;
     }
 
+    virtual string getManaCost()=0;
 
     bool isDead()
     {
@@ -159,11 +161,12 @@ public:
     {
         return color;
     }
+    virtual void useEffect(shared_ptr<Card> c)=0;
 
 };
 void setVectorSize(vector<int>* v) { //Vektör boşsa içine 5 tane 0 ekliyor. (Mana ücretleri için)
     if (v->size() == 0) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i <6; i++) {
             v->push_back(0);
         }
     }
@@ -218,6 +221,7 @@ public:
 
     void setManaVector(string manaType)
     {
+        cout << manaType << endl;
         if (manaType == "W")
         {
             manaCount[0]++;
@@ -335,7 +339,7 @@ public:
         }
     }
 
-    void checkManaCost(string s) { //Stringi gerekli olan mana ücretleri için vektöre çeviriyor
+    bool checkManaCost(string s) { //Stringi gerekli olan mana ücretleri için vektöre çeviriyor
         vector<int> requiredMana;
         setVectorSize(&requiredMana);
         for (int i = 0; i < s.length(); i++) {
@@ -343,27 +347,20 @@ public:
                 requiredMana[5] += ((int)s[i] - 48);
             }
             else {
-                if (s[i] == 'W') {
+                if (s[i] == "W"[0]) {
                     requiredMana[0]++;
-                } if (s[i] == 'G') {
+                } if (s[i] == "G"[0]) {
                     requiredMana[1]++;
-                } if (s[i] == 'B') {
+                } if (s[i] == "B"[0]) {
                     requiredMana[2]++;
-                } if (s[i] == 'R') {
+                } if (s[i] == "R"[0]) {
                     requiredMana[3]++;
-                } if (s[i] == 'L') {
+                } if (s[i] == "L"[0]) {
                     requiredMana[4]++;
                 }
             }
         }
-        cout << payMana(requiredMana) << endl; //Denemek için print ediyor normalde etmeyecek satış işlemi olduysa 1 print ediyor.
-
-        for (int i = 0; i < requiredMana.size(); i++)
-        {
-            cout << requiredMana[i];
-        }
-        cout << endl;
-
+        return payMana(requiredMana);
     }
 
     bool payMana(vector<int> manaCost) { //Vektörü alıp paramız yetiyor mu diye kontrol ediyor.
@@ -372,6 +369,7 @@ public:
         bool status = true;
         for (int i = 0; i < 6; i++) {
             if (manaCount[i] < manaCost[i]) {
+
                 if (i == 5) {
                     int totalManaToUse = 0;
                     bool possibleToBuy = false;
@@ -397,7 +395,6 @@ public:
                 manaAfterPayment[i] = (manaCount[i] - manaCost[i]);
             }
         }
-
         if (status == true) {
             for (int i = 0; i < manaAfterPayment.size(); i++) {
                 manaCount[i] = manaAfterPayment[i];
@@ -523,7 +520,6 @@ public:
         while (i < inPlay.size())
         {
             if (inPlay[i]->getType() == "Land") {
-                cout << BOLDRED << "Index:" << number << " " << RESET << inPlay[i]->getName() << " " << endl;
                 landCards.push_back(inPlay[i]);
                 number++;
             }
@@ -532,11 +528,16 @@ public:
         int selection = -1;
         int size = landCards.size();
         while (((selection >= 0 && selection < landCards.size()) || selection == -1) && size > 0) {
-            cout << landCards.size() << endl;
+
+            for(int i = 0;i<landCards.size();i++){
+                cout << BOLDRED << "Index:" << i << " " << RESET << landCards[i]->getName() << " " << endl;
+            }
+
             cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
             cin >> selection;
             if ((selection >= 0 && selection < landCards.size())) {
-                landCards[selection]->Tap();
+                landCards[selection]->Play();
+                landCards.erase(landCards.begin()+selection);
                 size--;
             }
             else {
@@ -562,8 +563,12 @@ public:
 
             if (hand[index]->getType() == "Sorcery")
             {
+                hand[index]->useEffect(hand[index]);
                 hand[index]->Play();
                 addCardToDiscard(hand[index]);
+            } else if(hand[index]->getType() == "Enchantment"){
+                hand[index]->useEffect(hand[index]);
+                addCardToinPlay(index);
             }
             else
             {
@@ -604,6 +609,7 @@ int turn = 0;
 shared_ptr<Player> p1, p2;
 
 class Effect {
+public:
     virtual void use(shared_ptr<Card>& C) = 0;
 };
 
@@ -1135,7 +1141,7 @@ public:
     {   //player classında activate ile çağrılıyor.
         Tap();
         isPlayed = true;
-        p1->setManaVector(getMana());
+        p1->setManaVector(getManaCost());
     }
 
     bool getStatus()
@@ -1148,7 +1154,7 @@ public:
         return type;
     }
 
-    string getMana()
+    string getManaCost()
     {
         return mana;
     }
@@ -1156,6 +1162,10 @@ public:
     bool isAlreadyPlayed()
     {
         return isPlayed;
+    }
+
+    void useEffect(shared_ptr<Card> c){
+
     }
 };
 
@@ -1297,6 +1307,10 @@ public:
         hasTrample = a;
     }
 
+    void useEffect(shared_ptr<Card> c){
+
+    }
+
 };
 
 class EnchantmentCard : public Card {
@@ -1375,6 +1389,9 @@ public:
         cout << name << ",  " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << enchantmentText;
     }
 
+    void useEffect(shared_ptr<Card> c){
+        effect->use(c);
+    }
 };
 
 class SorceryCard : public Card {
@@ -1416,7 +1433,10 @@ public:
     void printInfo()
     {
         cout << name << ",  " << type << ", COST:  " << manaCost << ", COLOR:  " << color;
-        
+    }
+
+    void useEffect(shared_ptr<Card> c){
+        effect->use(c);
     }
 
 };
@@ -1619,7 +1639,7 @@ void turnLoop() {
     ////Untap
     ourPlayer->untapAllinPlay();
 
-    ////Play
+    ////Land
     bool isPlayedLandCard = false;
     ourPlayer->printHand();
     cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
@@ -1632,6 +1652,11 @@ void turnLoop() {
         isPlayedLandCard = true;
     }
 
+    ////Tap
+    ourPlayer->tapSelectedLandCards();
+
+
+    ////Non Land
     bool stop = false;
     while (!stop) {
         selection = (ourPlayer->getAndPrintHandVector(false));
@@ -1639,16 +1664,19 @@ void turnLoop() {
             stop = true;
         }
         else {
-            ourPlayer->playItemAtHand(selection);
+            bool isCompleted = ourPlayer->checkManaCost(selection->getManaCost());
+            if(isCompleted){
+                ourPlayer->playItemAtHand(selection);
+                cout << GREEN << "Successfully purchase it!" << RESET;
+            } else {
+                cout << RED << "Your mana is not enough!" << RESET;
+            }
         }
     }
 
     //destroy
     DestroyEffect d;
     // d.use(card);
-
-    ////Tap
-    ourPlayer->tapSelectedLandCards();
 
     ////Combat
     shared_ptr<Player> targetPlayer;
