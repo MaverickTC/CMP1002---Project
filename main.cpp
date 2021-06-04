@@ -325,6 +325,16 @@ public:
         library.erase(library.begin() + id);
     }
 
+
+    void addCardToHandbyCard(shared_ptr<Card>& C1)
+    {
+         if (find(discard.begin(), discard.end(), C1) != discard.end()) {
+            hand.push_back(C1);
+            discard.erase(remove(discard.begin(), discard.end(), C1), discard.end());
+
+        }
+    }
+
     void checkManaCost(string s) { //Stringi gerekli olan mana ücretleri için vektöre çeviriyor
         vector<int> requiredMana;
         setVectorSize(&requiredMana);
@@ -957,7 +967,7 @@ public: void use(shared_ptr<Card>& C) {
     if (selectionIndex >= 0 && selectionIndex < cards.size()) {
         cards[selectionIndex]->setAttack(cards[selectionIndex]->getMaxAttack());
         cards[selectionIndex]->setHp(cards[selectionIndex]->getMaxHP());
-        targetPlayer->addCardToPlaybyCard(cards[selectionIndex]);
+        targetPlayer->addCardToHandbyCard(cards[selectionIndex]);
     }
     else {
         return; //please enter a valid index?
@@ -1350,7 +1360,6 @@ public:
     void printInfo()
     {
         cout << name << ",  " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << enchantmentText;
-        cout << "cockl";
     }
 
 };
@@ -1394,9 +1403,6 @@ public:
     void printInfo()
     {
         cout << name << ",  " << type << ", COST:  " << manaCost << ", COLOR:  " << color;
-
-        cout << endl;
-        cout << "THIS IS A SORCERY";
         
     }
 
@@ -1576,6 +1582,8 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
 bool isGameFinished = false;
 void turnLoop() {
     shared_ptr<Player> ourPlayer;
+
+
     if (turn == 0) {
         cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "1 ---" << RESET << endl;
         ourPlayer = p1;
@@ -1589,6 +1597,8 @@ void turnLoop() {
         //cout << "P2 hand:" << endl;
         //p2->printHand();
     }
+
+
 
     ////Draw
     cout << GREEN << "Draw Phase" << RESET << endl;
@@ -1667,6 +1677,8 @@ void turnLoop() {
         if (ourPlayer->returnCard(2)[i]->getType() == "Creature") {
             ourCards.push_back(ourPlayer->returnCard(2)[i]);
             number++;
+
+            
         }
         i++;
     }
@@ -1678,6 +1690,7 @@ void turnLoop() {
         if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
             otherCards.push_back(targetPlayer->returnCard(2)[i]);
             number++;
+            cout << "number is " << number;
         }
         i++;
     }
@@ -1707,7 +1720,7 @@ void turnLoop() {
         int s = -1;
         int defendCardCount = -1;
 
-        while (!(defendCardCount >= 0 && defendCardCount < attackCardCount) || defendCardCount == -1) {
+        while (!(defendCardCount >= 0 && defendCardCount <= attackCardCount) || defendCardCount == -1) {
             cout << "How many defending card do you want to use? (Max: " << attackCardCount << ")" << endl;
             cin >> defendCardCount;
         }
@@ -1718,10 +1731,12 @@ void turnLoop() {
         }
 
         int sToDefend = -1;
-        while ((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1) {
-            int x = 0;
+        while (((sToDefend >= 0 && sToDefend < defendCardCount) || sToDefend == -1)&& otherCards.size()>0) {
+            
+            cout << "size is "<<otherCards.size();
+            
             for (int j = 0; j < otherCards.size(); j++) {
-                cout << BOLDRED << "Index:" << x << " " << RESET << otherCards[j]->getName() << " "
+                cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " "
                     << endl;
             }
 
@@ -1731,11 +1746,13 @@ void turnLoop() {
                 break;
             }
 
-            if (find(otherCards.begin(), otherCards.end(), otherCards[s]) != otherCards.end()) {
-                usedDefendCards.push_back(otherCards[s]);
-                otherCards.erase(remove(otherCards.begin(), otherCards.end(), otherCards[s]), otherCards.end());
+            cout << "other cards size is " << otherCards.size() << endl;
+                usedDefendCards.push_back(otherCards[sToDefend]);
+                otherCards.erase(otherCards.begin() + sToDefend);
+                
+                // otherCards.erase(remove(otherCards.begin(), otherCards.end(), otherCards[s]), otherCards.end());
                 defendCardCount++;
-            }
+                cout << "other cards size after is " << otherCards.size() << endl;
         }
     }
 
@@ -1814,9 +1831,9 @@ void createDecks(std::shared_ptr<Player> p1, std::shared_ptr<Player> p2) {
     shared_ptr<Card>C14 = make_shared<SorceryCard>("Flood", "Sorcery", "1GW", "Green", player1, &destroyEffect);
 
     ////Enchantment Cards
-    shared_ptr<Card>C15 = make_shared<SorceryCard>("Rage", "Enchantment", "G", "Green", player1, &gainTrampleEffect);
-    shared_ptr<Card>C16 = make_shared<SorceryCard>("Holy War", "Enchantment", "1W", "White", player1, &gainStatsEffect);
-    shared_ptr<Card>C17 = make_shared<SorceryCard>("Holy Light", "Enchantment", "1W", "White", player1, &gainStatsEffect);
+    shared_ptr<Card>C15 = make_shared<EnchantmentCard>("Rage", "Enchantment", "G", "Green", player1, &gainTrampleEffect);
+    shared_ptr<Card>C16 = make_shared<EnchantmentCard>("Holy War", "Enchantment", "1W", "White", player1, &gainStatsEffect);
+    shared_ptr<Card>C17 = make_shared<EnchantmentCard>("Holy Light", "Enchantment", "1W", "White", player1, &gainStatsEffect);
 
     //Land Cards
     shared_ptr<Card>C18 = make_shared<LandCard>("Plains", "Land", "W", player1);
@@ -1981,17 +1998,13 @@ void setupGame() {
         }
         }
     }
-    
+
     createDecks(p1, p2);
 
     selectRandomCardsFromLibraryToPutIntoHand(p1);
     selectRandomCardsFromLibraryToPutIntoHand(p2);
 
-    //cout << "P1 hand:" << endl;
-    //p2->printHand();
-
-    //cout << "P2 hand:" << endl;
-    //p2->printHand();
+    // buraya kartla nasıl yapıcaz ?? destroyEffect.use(p1->returnCard(0)[0]);
 
     playGame();
 }
