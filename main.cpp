@@ -1640,16 +1640,20 @@ void turnLoop() {
     ourPlayer->untapAllinPlay();
 
     ////Land
+
     bool isPlayedLandCard = false;
     ourPlayer->printHand();
-    cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
-    string answer;
-    cin >> answer;
 
-    if (answer == "Y" || answer == "y") {
-        selection = (ourPlayer->getAndPrintHandVector(true));
-        ourPlayer->playItemAtHand(selection);
-        isPlayedLandCard = true;
+    if(ourPlayer->returnCard(1).size()){
+        cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
+        string answer;
+        cin >> answer;
+
+        if (answer == "Y" || answer == "y") {
+            selection = (ourPlayer->getAndPrintHandVector(true));
+            ourPlayer->playItemAtHand(selection);
+            isPlayedLandCard = true;
+        }
     }
 
     ////Tap
@@ -1749,7 +1753,7 @@ void turnLoop() {
             cin >> defendCardCount;
         }
         for (int j = 0; j < otherCards.size(); j++) {
-            if (otherCards[j]->getType() == "Creature") {
+            if (otherCards[j]->getType() == "Creature" && targetPlayer->returnCard(2)[i]->getStatus()==false) {
                 cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " " << endl;
             }
         }
