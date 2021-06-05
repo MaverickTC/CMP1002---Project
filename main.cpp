@@ -181,13 +181,22 @@ protected:
     int hp;
     vector<shared_ptr<Card>> library, hand, inPlay, discard;
     vector<int> manaCount; //White, Green, Black, Red, Blue, Colorless
+    string playerName;
 public:
-
     Player()
     {
         hp = 15;
         hasWon = false;
         setVectorSize(&manaCount);
+        playerName="";
+    }
+    Player(string name)
+    {
+        hp = 15;
+        hasWon = false;
+        setVectorSize(&manaCount);
+        playerName=name;
+
     }
     bool getHasWon()
     {
@@ -409,28 +418,32 @@ public:
 
     void printHand()
     {
-        cout << "CARDS IN YOUR HAND: " << endl;
+        cout << CYAN << "CARDS IN " << playerName << "'s " << "HAND" << RESET << endl;
         for (int i = 0; i < hand.size(); i++)
         {
             cout << "index: " << i << '\t';
             (hand[i])->printInfo();
             cout << endl;
-
+        }
+        if(hand.size()==0){
+            cout << RED << "It is empty." << RESET << endl;
         }
         //cout << endl;
     }
 
     void printInplay()
     {
-        cout << "CARDS IN PLAY: " << endl;
+        cout << CYAN << "CARDS IN " << playerName << "'s " << "PLAY" << RESET << endl;
         for (int i = 0; i < inPlay.size(); i++)
         {
-            cout << "index: " << i << '\t';
+            cout << BLUE << "index: " << WHITE << i << '\t' << RESET;
             (inPlay[i])->printInfo();
             cout << endl;
 
         }
-
+        if(inPlay.size()==0){
+            cout << RED << "It is empty." << RESET << endl;
+        }
     }
 
     void printDiscard()
@@ -1157,7 +1170,7 @@ public:
     }
     void printInfo()
     {
-        cout << name << " " << type << " " << mana;
+        cout << CYAN << name << " " << YELLOW << type << " " << GREEN << mana << RESET;
     }
     void Tap()
     {
@@ -1675,13 +1688,11 @@ void combatNoDefendingPlayer(shared_ptr<Card>& attackingCreature, shared_ptr<Pla
 }
 
 bool isGameFinished = false;
+int roundCounter = 1;
 void turnLoop() {
     shared_ptr<Player> ourPlayer;
 
     shared_ptr<Player> targetPlayer;
-
-    int roundCounter = 1;
-
 
     if (p1->getHp() <= 0 )
     {
@@ -2088,12 +2099,15 @@ void playGame() {
     while (!isGameFinished) {
         turnLoop();
         turn = (turn == 0) ? turn = 1 : turn = 0;
+        if(turn==0){
+            roundCounter++;
+        }
     }
 }
 
 void setupGame() {
-    p1 = make_shared<Player>();
-    p2 = make_shared<Player>();
+    p1 = make_shared<Player>("Player 1");
+    p2 = make_shared<Player>("Player 2");
 
     for (int i = 0; i < 8; i++) {
         switch (i) {
