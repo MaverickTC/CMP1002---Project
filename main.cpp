@@ -1299,6 +1299,11 @@ public:
 
     }
 
+    bool getStatus()
+    {
+        return isTapped;
+    }
+
     void printInfo()
     {
         cout << "'" << name << "'" << " " << "ATTACK: " << attackPower << " " << "HP: " << hp << " " << "COSTS: " << manaCost << " MANA. " << "COLOR: " << color;
