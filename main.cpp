@@ -1678,6 +1678,8 @@ bool isGameFinished = false;
 void turnLoop() {
     shared_ptr<Player> ourPlayer;
 
+    int roundCounter = 1;
+
 
     if (p1->getHp() <= 0 || p2->getHp() <= 0)
     {
@@ -1921,6 +1923,7 @@ void turnLoop() {
 
     ourPlayer->HealAllCreatures();
     targetPlayer->HealAllCreatures();
+    cout << "End of round " << roundCounter << endl;
 
 }
 
