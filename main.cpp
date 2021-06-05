@@ -1629,14 +1629,14 @@ void turnLoop() {
 
 
     if (turn == 0) {
-        cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "1 ---" << RESET << endl;
+        cout << BLUE << "------ It is a turn of player " << BOLDBLUE << "1 ------" << RESET << endl;
         ourPlayer = p1;
         //cout << "P1 hand:" << endl;
         //p1->printHand();
 
     }
     else if (turn == 1) {
-        cout << BLUE << "--- It is a turn of player " << BOLDBLUE << "2 ---" << RESET << endl;
+        cout << BLUE << "------ It is a turn of player " << BOLDBLUE << "2 ------" << RESET << endl;
         ourPlayer = p2;
         //cout << "P2 hand:" << endl;
         //p2->printHand();
@@ -1736,8 +1736,6 @@ void turnLoop() {
         if (ourPlayer->returnCard(2)[i]->getType() == "Creature") {
             ourCards.push_back(ourPlayer->returnCard(2)[i]);
             number++;
-
-
         }
         i++;
     }
@@ -1746,7 +1744,7 @@ void turnLoop() {
 
     while (i < targetPlayer->returnCard(2).size())
     {
-        if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
+        if (targetPlayer->returnCard(2)[i]->getType() == "Creature" && targetPlayer->returnCard(2)[i]->getStatus() == false) {
             otherCards.push_back(targetPlayer->returnCard(2)[i]);
             number++;
             cout << "number is " << number;
@@ -1784,9 +1782,7 @@ void turnLoop() {
             cin >> defendCardCount;
         }
         for (int j = 0; j < otherCards.size(); j++) {
-            if (otherCards[j]->getType() == "Creature" && otherCards[j]->getStatus() == false) {
-                cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " " << endl;
-            }
+            cout << BOLDRED << "Index:" << j << " " << RESET << otherCards[j]->getName() << " " << endl;
         }
 
         int sToDefend = -1;
