@@ -1678,6 +1678,8 @@ bool isGameFinished = false;
 void turnLoop() {
     shared_ptr<Player> ourPlayer;
 
+    shared_ptr<Player> targetPlayer;
+
     int roundCounter = 1;
 
 
@@ -1707,6 +1709,14 @@ void turnLoop() {
         //p2->printHand();
     }
 
+  
+
+    if (turn == 0) {
+        targetPlayer = p2;
+    }
+    else if (turn == 1) {
+        targetPlayer = p1;
+    }
 
 
 
@@ -1741,6 +1751,12 @@ void turnLoop() {
 
     bool isPlayedLandCard = false;
     ourPlayer->printHand();
+
+    ourPlayer->printInplay();
+    targetPlayer->printInplay();
+
+    cout << ourPlayer->getHp() << endl;
+    cout << targetPlayer->getHp() << endl;
 
     string answer;
 
@@ -1786,14 +1802,7 @@ void turnLoop() {
     // d.use(card);
 
     ////Combat
-    shared_ptr<Player> targetPlayer;
 
-    if (turn == 0) {
-        targetPlayer = p2;
-    }
-    else if (turn == 1) {
-        targetPlayer = p1;
-    }
 
 
     vector<shared_ptr<Card>> ourCards, otherCards;
