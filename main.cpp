@@ -77,7 +77,7 @@ public:
 
     bool isDead()
     {
-        cout << "hp is " << getHp() << endl;
+        getHp();
 
 
         if (getHp() <= 0)
@@ -98,7 +98,7 @@ public:
 
     virtual void printInfo()
     {
-        cout << name << " " << type;
+        cout << CYAN << name << " " << YELLOW << type << RESET;
     }
 
     virtual bool getStatus()
@@ -203,6 +203,10 @@ public:
         return hasWon;
     }
 
+    void getHealthInfo()
+    {
+        cout << GREEN << playerName << "'s health is: " << RED << getHp() << RESET << endl;
+    }
     int getHp()
     {
         return hp;
@@ -234,7 +238,6 @@ public:
 
     void setManaVector(string manaType)
     {
-        cout << manaType << endl;
         if (manaType == "W")
         {
             manaCount[0]++;
@@ -418,22 +421,21 @@ public:
 
     void printHand()
     {
-        cout << CYAN << "CARDS IN " << playerName << "'s " << "HAND" << RESET << endl;
+        cout << BOLDBLUE << "CARDS IN " << playerName << "'s " << "HAND" << RESET << endl;
         for (int i = 0; i < hand.size(); i++)
         {
-            cout << "index: " << i << '\t';
+            cout << RED << "index: " << BOLDWHITE << i << '\t' << RESET;
             (hand[i])->printInfo();
             cout << endl;
         }
         if(hand.size()==0){
             cout << RED << "It is empty." << RESET << endl;
         }
-        //cout << endl;
     }
 
     void printInplay()
     {
-        cout << CYAN << "CARDS IN " << playerName << "'s " << "PLAY" << RESET << endl;
+        cout << BOLDBLUE << "CARDS IN " << playerName << "'s " << "PLAY" << RESET << endl;
         for (int i = 0; i < inPlay.size(); i++)
         {
             cout << BLUE << "index: " << WHITE << i << '\t' << RESET;
@@ -521,6 +523,10 @@ public:
                 stop = true;
                 selection = 0; //Daha iyi bir yol bulunabilir.
                 break;
+            } else if(cin.fail()){
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                selection = -1;
             }
         }
         if ((stop && !isLand) || selection < 0) {
@@ -554,8 +560,17 @@ public:
                 cout << " " << endl;
             }
 
-            cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
-            cin >> selection;
+
+            if(selection<0||selection>landCards.size()){
+                cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
+                cin >> selection;
+
+                if(cin.fail()){
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
+            }
+
 
             if ((selection >= 0 && selection < landCards.size())) {
                 landCards[selection]->Play();
@@ -1330,7 +1345,7 @@ public:
 
     void printInfo()
     {
-        cout << "'" << name << "'" << " " << "ATTACK: " << attackPower << " " << "HP: " << hp << " " << "COSTS: " << manaCost << " MANA. " << "COLOR: " << color << " " << trample << first_strike;
+        cout << CYAN << name << YELLOW << " ATTACK: " << attackPower << " " << GREEN << "HP: " << hp << " " << CYAN <<"COSTS:" << manaCost << YELLOW << " MANA: " << GREEN << "COLOR: " << CYAN << color << " " << YELLOW << trample << GREEN << " " << first_strike << RESET;
     }
 
     string getType()
@@ -1445,7 +1460,7 @@ public:
 
     void printInfo()
     {
-        cout << "'" << name << "'" << " " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << enchantmentText;
+        cout << CYAN << name << " " << YELLOW << type << GREEN << " COST: " << manaCost << CYAN << " COLOR: " << color << YELLOW << " TEXT: " << enchantmentText <<RESET;
     }
 
     void useEffect(shared_ptr<Card> c) {
@@ -1472,7 +1487,7 @@ public:
         {
             sorceryText = "'Destroy 1 Target Enchantment'";
         }
-        else if (name == "'Lightning Bolt'")
+        else if (name == "Lightning Bolt")
         {
             sorceryText = "'All white creatures gain +1/+1'";
         }
@@ -1501,8 +1516,7 @@ public:
 
     void Play()
     {
-        //activate ability. effect falan
-        cout << "sorcery is played" << endl;
+
     }
 
     string getType()
@@ -1516,7 +1530,7 @@ public:
     }
     void printInfo()
     {
-        cout << "'" << name << "'" << " " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << sorceryText;
+        cout << CYAN << name << YELLOW << " COST: " << manaCost << GREEN << " COLOR: " << color << CYAN << " TEXT: " << sorceryText;
     }
 
     void useEffect(shared_ptr<Card> c) {
@@ -1696,12 +1710,12 @@ void turnLoop() {
 
     if (p1->getHp() <= 0 )
     {
-        cout << "PLAYER 2 HAS WON WITH " << p2->getHp() << " HP LEFT." << endl;
+        cout << GREEN << "PLAYER 2 HAS WON WITH " << p2->getHp() << " HP LEFT." << RESET << endl;
         isGameFinished = true;
     }
     else if (p2->getHp() <= 0)
     {
-        cout << "PLAYER 1 HAS WON WITH " << p1->getHp() << " HP LEFT." << endl;
+        cout << GREEN << "PLAYER 1 HAS WON WITH " << p1->getHp() << " HP LEFT." << RESET << endl;
         isGameFinished = true;
     }
 
@@ -1750,8 +1764,18 @@ void turnLoop() {
         }
     }
     else {
-        //Lose The Game
         isGameFinished = true;
+
+        ourPlayer->setHp(0);
+
+        if (p1->getHp() <= 0 )
+        {
+            cout << GREEN << "PLAYER 2 HAS WON WITH " << p2->getHp() << " HP LEFT." << RESET << endl;
+        }
+        else if (p2->getHp() <= 0)
+        {
+            cout << GREEN << "PLAYER 1 HAS WON WITH " << p1->getHp() << " HP LEFT." << RESET <<endl;
+        }
     }
 
 
@@ -1766,8 +1790,13 @@ void turnLoop() {
     ourPlayer->printInplay();
     targetPlayer->printInplay();
 
-    cout << ourPlayer->getHp() << endl;
-    cout << targetPlayer->getHp() << endl;
+    if(turn==0){
+        ourPlayer->getHealthInfo();
+        targetPlayer->getHealthInfo();
+    } else {
+        targetPlayer->getHealthInfo();
+        ourPlayer->getHealthInfo();
+    }
 
     string answer;
 
@@ -1802,7 +1831,7 @@ void turnLoop() {
                 cout << endl;
             }
             else {
-                cout << RED << "Your mana is not enough for !" << RESET << selection->getName();
+                cout << RED << "Your mana is not enough for " << WHITE << selection->getName() << RED << " !" << RESET;
                 cout << endl;
             }
         }
@@ -1886,9 +1915,6 @@ void turnLoop() {
             cin >> sToDefend;
 
             cout << "other cards size is : " << otherCards.size();
-            cout << sToDefend << endl;
-            cout << otherCards.size() << endl;
-            cout << defendCardCount << endl;
 
 
             if (sToDefend == -1 || otherCards.size() < 1) {
