@@ -506,7 +506,7 @@ public:
                 break;
             }
         }
-        if (stop && !isLand) {
+        if ((stop && !isLand)||selection<0) {
             return nullptr;
         }
         else {
@@ -530,19 +530,17 @@ public:
             i++;
         }
         int selection = -1;
-        int size = landCards.size();
-        while (((selection >= 0 && selection < landCards.size()) || selection == -1) && size > 0) {
-
+        while (((selection >= 0 && selection <= landCards.size()) || selection == -1) && landCards.size() > 0) {
             for (int i = 0; i < landCards.size(); i++) {
                 cout << BOLDRED << "Index:" << i << " " << RESET << landCards[i]->getName() << " " << endl;
             }
 
             cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
             cin >> selection;
+
             if ((selection >= 0 && selection < landCards.size())) {
                 landCards[selection]->Play();
                 landCards.erase(landCards.begin() + selection);
-                size--;
             }
             else {
                 return;
