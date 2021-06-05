@@ -68,14 +68,19 @@ public:
         isTapped = false;
     }
 
+    virtual int getHp()
+    {
+        return 1;
+    }
+
     virtual string getManaCost() = 0;
 
     bool isDead()
     {
-        cout << "hp is "<<hp << endl;
+        cout << "hp is " << getHp() << endl;
 
 
-        if (hp <= 0)
+        if (getHp() <= 0)
         {
             isDestroyed = true;
         }
@@ -105,10 +110,7 @@ public:
     {
 
     }
-    virtual int getHp()
-    {
-        return 1;
-    }
+
 
     virtual int getMaxHP()
     {
@@ -1467,19 +1469,11 @@ public:
     }
 
 };
-void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card> defendingCreature, shared_ptr<Player >& defendingPlayer)
+void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card> &defendingCreature, shared_ptr<Player >& defendingPlayer)
 {
+    attackingCreature->Tap();
 
-    if (defendingCreature == nullptr)
-    {
-        //DEFENDER YOK ISE
-        defendingPlayer->setHp(defendingPlayer->getHp() - attackingCreature->getAttackPower());
-
-        cout << "combat with no defenders";
-        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
-    }
-
-    else if (attackingCreature->getHasFirstStrike() == true && defendingCreature->getHasFirstStrike() == true)
+    if (attackingCreature->getHasFirstStrike() == true && defendingCreature->getHasFirstStrike() == true)
     {   //İKİSİNDE DE FIRST STRIKE VARSA NORMAL COMBAT
 
         cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) has first strike. normal combat" << endl;
@@ -1623,9 +1617,28 @@ void combat(shared_ptr<Card> attackingCreature, shared_ptr<Player>& attakingPlay
     }
 
 }
+
+void combatNoDefendingPlayer(shared_ptr<Card>& attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Player >& defendingPlayer)
+{
+        attackingCreature->Tap();
+
+        defendingPlayer->setHp(defendingPlayer->getHp() - attackingCreature->getAttackPower());
+
+        cout << "combat with no defenders";
+        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+    
+}
+
 bool isGameFinished = false;
 void turnLoop() {
     shared_ptr<Player> ourPlayer;
+
+
+    if (p1->getHp() <= 0 || p2->getHp() <= 0)
+    {
+        isGameFinished = true;
+    }
+
 
 
     if (turn == 0) {
@@ -1641,6 +1654,9 @@ void turnLoop() {
         //cout << "P2 hand:" << endl;
         //p2->printHand();
     }
+
+ 
+
 
 
 
@@ -1665,6 +1681,7 @@ void turnLoop() {
         isGameFinished = true;
     }
 
+
     ////Untap
     ourPlayer->untapAllinPlay();
 
@@ -1675,7 +1692,7 @@ void turnLoop() {
 
     string answer;
 
-    if (ourPlayer->returnCard(1).size()>0) {
+    if (ourPlayer->returnCard(1).size() > 0) {
         cout << BOLDMAGENTA << "Do you want to play a land card? " << BOLDBLUE << "(Y/N)" << RESET << endl;
 
         cin >> answer;
@@ -1723,6 +1740,7 @@ void turnLoop() {
     else if (turn == 1) {
         targetPlayer = p1;
     }
+
 
     vector<shared_ptr<Card>> ourCards, otherCards;
     vector<shared_ptr<Card>> usedAttackCards, usedDefendCards;
@@ -1823,7 +1841,7 @@ void turnLoop() {
                 cout << "used defending cards are" << usedDefendCards[i] << endl;
             }
             else {
-                combat(usedAttackCards[i], ourPlayer, nullptr, targetPlayer);
+                combatNoDefendingPlayer(usedAttackCards[i], ourPlayer, targetPlayer);
                 cout << "used attack cards are" << usedAttackCards[i] << endl;
             }
         }
