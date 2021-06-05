@@ -477,14 +477,18 @@ public:
         {
             if (isLand) {
                 if (hand[i]->getType() == "Land") {
-                    cout << BOLDRED << "Index:" << number << " " << RESET << hand[i]->getName() << " " << endl;
+                    cout << BOLDRED << "Index:" << number << " " << RESET;
+                    hand[i]->printInfo();
+                    cout << endl;
                     cards.push_back(hand[i]);
                     number++;
                 }
             }
             else {
                 if (hand[i]->getType() != "Land") {
-                    cout << BOLDRED << "Index:" << number << " " << RESET << hand[i]->getName() << " " << endl;
+                    cout << BOLDRED << "Index:" << number << " " << RESET;
+                    hand[i]->printInfo();
+                    cout << endl;
                     cards.push_back(hand[i]);
                     number++;
                 }
@@ -506,7 +510,7 @@ public:
                 break;
             }
         }
-        if ((stop && !isLand)||selection<0) {
+        if ((stop && !isLand) || selection < 0) {
             return nullptr;
         }
         else {
@@ -532,7 +536,9 @@ public:
         int selection = -1;
         while (((selection >= 0 && selection <= landCards.size()) || selection == -1) && landCards.size() > 0) {
             for (int i = 0; i < landCards.size(); i++) {
-                cout << BOLDRED << "Index:" << i << " " << RESET << landCards[i]->getName() << " " << endl;
+                cout << BOLDRED << "Index:" << i << " " << RESET;
+                landCards[i]->printInfo();
+                cout << " " << endl;
             }
 
             cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
@@ -1208,6 +1214,8 @@ protected:
     string color;
     bool isTapped;
     std::shared_ptr<Player> p1;
+    string trample = "";
+    string first_strike = "";
 public:
 
     CreatureCard() :Card() {
@@ -1235,13 +1243,18 @@ public:
         {
             hasTrample = true;
             hasFirstStrike = false;
+
+            trample = "'HAS TRAMPLE'";
+
         }
 
         else if (name == "White Knight" || name == "Black Knight")
         {
             hasFirstStrike = true;
             hasTrample = false;
+            first_strike = "'HAS FIRST STRIKE'";
         }
+
     }
 
     int getHp()
@@ -1304,7 +1317,7 @@ public:
 
     void printInfo()
     {
-        cout << "'" << name << "'" << " " << "ATTACK: " << attackPower << " " << "HP: " << hp << " " << "COSTS: " << manaCost << " MANA. " << "COLOR: " << color;
+        cout << "'" << name << "'" << " " << "ATTACK: " << attackPower << " " << "HP: " << hp << " " << "COSTS: " << manaCost << " MANA. " << "COLOR: " << color << " " << trample << first_strike;
     }
 
     string getType()
@@ -1345,6 +1358,7 @@ public:
 
 };
 
+
 class EnchantmentCard : public Card {
 protected:
     string manaCost;
@@ -1371,27 +1385,27 @@ public:
 
         if (name == "Rage")
         {
-            enchantmentText = "1 Target creature gains Trample";
+            enchantmentText = "'1 Target creature gains Trample'";
         }
         else if (name == "Holy War")
         {
-            enchantmentText = "All white creatures gain +1/+1";
+            enchantmentText = "'All white creatures gain +1/+1'";
         }
         else if (name == "Holy Light")
         {
-            enchantmentText = "All black creatures gain -1/-1";
+            enchantmentText = "'All black creatures gain -1/-1'";
         }
         else  if (name == "Unholy War")
         {
-            enchantmentText = "All black creatures gain +2/+0";
+            enchantmentText = "'All black creatures gain +2/+0'";
         }
         else if (name == "Restrain")
         {
-            enchantmentText = "All green creatures lose Trample";
+            enchantmentText = "'All green creatures lose Trample'";
         }
         else if (name == "Slow")
         {
-            enchantmentText = "1 Target creature loses First Strike";
+            enchantmentText = "'1 Target creature loses First Strike'";
         }
     }
 
@@ -1418,7 +1432,7 @@ public:
 
     void printInfo()
     {
-        cout << name << ",  " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << enchantmentText;
+        cout << "'" << name << "'" << " " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << enchantmentText;
     }
 
     void useEffect(shared_ptr<Card> c) {
@@ -1431,6 +1445,7 @@ protected:
     string manaCost;
     string color;
     Effect* effect;
+    string sorceryText;
 public:
     std::shared_ptr<Player> p1;
     SorceryCard(string name, string type, string manaCost, string color, shared_ptr<Player> p1, Effect* effect) :Card(name, type)
@@ -1440,6 +1455,30 @@ public:
         this->effect = effect;
         this->color = color;
         this->p1 = p1;
+        if (name == "Disenchant")
+        {
+            sorceryText = "'Destroy 1 Target Enchantment'";
+        }
+        else if (name == "'Lightning Bolt'")
+        {
+            sorceryText = "'All white creatures gain +1/+1'";
+        }
+        else if (name == "Flood")
+        {
+            sorceryText = "'Destroy 1 Target Land'";
+        }
+        else  if (name == "Reanimate")
+        {
+            sorceryText = "'Return 1 creature from discard into to your hand'";
+        }
+        else if (name == "Plague")
+        {
+            sorceryText = "'Deal 1 damage to all creatures.'";
+        }
+        else if (name == "Terror")
+        {
+            sorceryText = "'Destroy 1 Target Creature'";
+        }
     }
     SorceryCard() :Card()
     {
@@ -1464,7 +1503,7 @@ public:
     }
     void printInfo()
     {
-        cout << name << ",  " << type << ", COST:  " << manaCost << ", COLOR:  " << color;
+        cout << "'" << name << "'" << " " << type << ", COST:  " << manaCost << ", COLOR:  " << color << " TEXT: " << sorceryText;
     }
 
     void useEffect(shared_ptr<Card> c) {
@@ -1472,14 +1511,14 @@ public:
     }
 
 };
-void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card> &defendingCreature, shared_ptr<Player >& defendingPlayer)
+void combat(shared_ptr<Card>& attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Card>& defendingCreature, shared_ptr<Player >& defendingPlayer)
 {
     attackingCreature->Tap();
 
     if (attackingCreature->getHasFirstStrike() == true && defendingCreature->getHasFirstStrike() == true)
     {   //İKİSİNDE DE FIRST STRIKE VARSA NORMAL COMBAT
 
-        cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) has first strike. normal combat" << endl;
+      //  cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) has first strike. normal combat" << endl;
 
 
         defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
@@ -1502,6 +1541,7 @@ void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPla
         }
 
         cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+        cout << "ATTACKING PLAYER HAS " << attakingPlayer->getHp() << "HP LEFT." << endl;
 
     }
 
@@ -1530,13 +1570,13 @@ void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPla
 
         }
 
-
         cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+        cout << "ATTACKING PLAYER HAS " << attakingPlayer->getHp() << "HP LEFT." << endl;
 
     }
     else if (defendingCreature->getHasFirstStrike() == true && attackingCreature->getHasFirstStrike() == false)
     {
-        cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) doesnt have it." << endl;
+       // cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) doesnt have it." << endl;
         attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
 
         if (attackingCreature->isDead())
@@ -1558,6 +1598,7 @@ void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPla
         }
 
         cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+        cout << "ATTACKING PLAYER HAS " << attakingPlayer->getHp() << "HP LEFT." << endl;
 
     }
 
@@ -1565,7 +1606,7 @@ void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPla
     else if (attackingCreature->getHasTrample() == true)
     {
         //attacking'de trample varsa.
-        cout << attackingCreature->getName() << "(attacking) has trample." << endl;
+        //cout << attackingCreature->getName() << "(attacking) has trample." << endl;
 
         int excess_damage;
 
@@ -1590,10 +1631,11 @@ void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPla
         defendingPlayer->setHp(defendingPlayer->getHp() - excess_damage);
 
         cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+        cout << "ATTACKING PLAYER HAS " << attakingPlayer->getHp() << "HP LEFT." << endl;
     }
 
     else {
-        cout << "iki creature da normal." << endl;
+       
 
 
         defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
@@ -1616,20 +1658,20 @@ void combat(shared_ptr<Card> &attackingCreature, shared_ptr<Player>& attakingPla
 
             attakingPlayer->addCardToDiscard(attackingCreature);
         }
-
+        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+        cout << "ATTACKING PLAYER HAS " << attakingPlayer->getHp() << "HP LEFT." << endl;
     }
 
 }
 
 void combatNoDefendingPlayer(shared_ptr<Card>& attackingCreature, shared_ptr<Player>& attakingPlayer, shared_ptr<Player >& defendingPlayer)
 {
-        attackingCreature->Tap();
+    attackingCreature->Tap();
 
-        defendingPlayer->setHp(defendingPlayer->getHp() - attackingCreature->getAttackPower());
+    defendingPlayer->setHp(defendingPlayer->getHp() - attackingCreature->getAttackPower());
+    cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
+    cout << "ATTACKING PLAYER HAS " << attakingPlayer->getHp() << "HP LEFT." << endl;
 
-        cout << "combat with no defenders";
-        cout << "DEFENDING PLAYER HAS " << defendingPlayer->getHp() << "HP LEFT." << endl;
-    
 }
 
 bool isGameFinished = false;
@@ -1640,25 +1682,28 @@ void turnLoop() {
     if (p1->getHp() <= 0 || p2->getHp() <= 0)
     {
         isGameFinished = true;
+
+        
+
     }
 
 
 
     if (turn == 0) {
-        cout << BLUE << "------ It is a turn of player " << BOLDBLUE << "1 ------" << RESET << endl;
+        cout << BLUE << "------ It is the turn of the player " << BOLDBLUE << "1 ------" << RESET << endl;
         ourPlayer = p1;
         //cout << "P1 hand:" << endl;
         //p1->printHand();
 
     }
     else if (turn == 1) {
-        cout << BLUE << "------ It is a turn of player " << BOLDBLUE << "2 ------" << RESET << endl;
+        cout << BLUE << "------ It is the turn of the player " << BOLDBLUE << "2 ------" << RESET << endl;
         ourPlayer = p2;
         //cout << "P2 hand:" << endl;
         //p2->printHand();
     }
 
- 
+
 
 
 
@@ -1723,9 +1768,11 @@ void turnLoop() {
             if (isCompleted) {
                 ourPlayer->playItemAtHand(selection);
                 cout << GREEN << "Successfully purchase it!" << RESET;
+                cout << endl;
             }
             else {
                 cout << RED << "Your mana is not enough!" << RESET;
+                cout << endl;
             }
         }
     }
@@ -1777,7 +1824,9 @@ void turnLoop() {
         int s = -1;
         while ((s >= 0 && s < ourCards.size()) || s == -1) {
             for (int j = 0; j < ourCards.size(); j++) {
-                cout << BOLDRED << "Index:" << j << " " << RESET << ourCards[j]->getName() << " " << endl;
+                cout << BOLDRED << "Index:" << j << " " << RESET;
+                    ourCards[j]->printInfo();
+                cout<< " " << endl;
             }
 
             cout << BOLDMAGENTA << "Please enter an index number for a creature." << RESET << endl;
@@ -1830,31 +1879,24 @@ void turnLoop() {
         }
     }
 
-    cout << "used attack cards size is : " << usedAttackCards.size() << endl;
-    cout << "used defend cards size is : " << usedDefendCards.size() << endl;
-
-
 
     if (usedAttackCards.size() > usedDefendCards.size()) {
         for (int i = 0; i < usedAttackCards.size(); i++) {
             if (i < usedDefendCards.size()) {
                 combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
 
-                cout << "used attack cards are" << usedAttackCards[i] << endl;
-                cout << "used defending cards are" << usedDefendCards[i] << endl;
+                
             }
             else {
                 combatNoDefendingPlayer(usedAttackCards[i], ourPlayer, targetPlayer);
-                cout << "used attack cards are" << usedAttackCards[i] << endl;
+              
             }
         }
     }
     else if (usedAttackCards.size() == usedDefendCards.size()) {
         for (int i = 0; i < usedAttackCards.size(); i++) {
             combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
-            cout << "used attack cards are" << usedAttackCards[i] << endl;
-            cout << "used defending cards are" << usedDefendCards[i] << endl;
-
+          
         }
     }
 
