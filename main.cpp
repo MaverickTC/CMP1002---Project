@@ -554,6 +554,7 @@ public:
             i++;
         }
         int selection = -1;
+
         while (((selection >= 0 && selection <= landCards.size()) || selection == -1) && landCards.size() > 0) {
             for (int i = 0; i < landCards.size(); i++) {
                 cout << BOLDRED << "Index:" << i << " " << RESET;
@@ -561,8 +562,7 @@ public:
                 cout << " " << endl;
             }
 
-
-            if (selection<0 || selection>landCards.size()) {
+            if ((selection<0 || selection>=landCards.size())) {
                 cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
                 cin >> selection;
 
@@ -572,10 +572,10 @@ public:
                 }
             }
 
-
             if ((selection >= 0 && selection < landCards.size())) {
                 landCards[selection]->Play();
                 landCards.erase(landCards.begin() + selection);
+                selection = -1;
             }
             else {
                 return;
