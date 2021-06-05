@@ -1681,14 +1681,16 @@ void turnLoop() {
     int roundCounter = 1;
 
 
-    if (p1->getHp() <= 0 || p2->getHp() <= 0)
+    if (p1->getHp() <= 0 )
     {
+        cout << "PLAYER 2 HAS WON WITH " << p2->getHp() << " HP LEFT." << endl;
         isGameFinished = true;
-
-        
-
     }
-
+    else if (p2->getHp() <= 0)
+    {
+        cout << "PLAYER 1 HAS WON WITH " << p1->getHp() << " HP LEFT." << endl;
+        isGameFinished = true;
+    }
 
 
     if (turn == 0) {
