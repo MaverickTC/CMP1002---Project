@@ -1767,11 +1767,11 @@ void turnLoop() {
             bool isCompleted = ourPlayer->checkManaCost(selection->getManaCost());
             if (isCompleted) {
                 ourPlayer->playItemAtHand(selection);
-                cout << GREEN << "Successfully purchase it!" << RESET;
+                cout << GREEN << "You played: " << RESET << selection->getName();
                 cout << endl;
             }
             else {
-                cout << RED << "Your mana is not enough!" << RESET;
+                cout << RED << "Your mana is not enough for !" << RESET << selection->getName();
                 cout << endl;
             }
         }
