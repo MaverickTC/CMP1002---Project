@@ -188,14 +188,14 @@ public:
         hp = 15;
         hasWon = false;
         setVectorSize(&manaCount);
-        playerName="";
+        playerName = "";
     }
     Player(string name)
     {
         hp = 15;
         hasWon = false;
         setVectorSize(&manaCount);
-        playerName=name;
+        playerName = name;
 
     }
     bool getHasWon()
@@ -428,7 +428,7 @@ public:
             (hand[i])->printInfo();
             cout << endl;
         }
-        if(hand.size()==0){
+        if (hand.size() == 0) {
             cout << RED << "It is empty." << RESET << endl;
         }
     }
@@ -443,7 +443,7 @@ public:
             cout << endl;
 
         }
-        if(inPlay.size()==0){
+        if (inPlay.size() == 0) {
             cout << RED << "It is empty." << RESET << endl;
         }
     }
@@ -523,7 +523,8 @@ public:
                 stop = true;
                 selection = 0; //Daha iyi bir yol bulunabilir.
                 break;
-            } else if(cin.fail()){
+            }
+            else if (cin.fail()) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 selection = -1;
@@ -561,11 +562,11 @@ public:
             }
 
 
-            if(selection<0||selection>landCards.size()){
+            if (selection<0 || selection>landCards.size()) {
                 cout << BOLDMAGENTA << "Please enter an index number to tap card or enter -1 to skip." << RESET << endl;
                 cin >> selection;
 
-                if(cin.fail()){
+                if (cin.fail()) {
                     cin.clear();
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
@@ -679,6 +680,15 @@ public:
             }
 
             int selectionIndex;
+            for (int i = 0; i < cards.size(); i++)
+            {
+                cout << endl;
+                cout << "index: " << i << " ";
+                cards[i]->printInfo();
+
+
+            }
+            cout << endl;
             cout << "Please enter enchantment index of which you want to destroy." << endl;
             //burada ve alttaki effectlerde cards printlenebilir.
             cin >> selectionIndex;
@@ -706,6 +716,15 @@ public:
                 }
             }
             int selectionIndex;
+            for (int i = 0; i < cards.size(); i++)
+            {
+                cout << endl;
+                cout << "index: " << i << " ";
+                cards[i]->printInfo();
+
+
+            }
+            cout << endl;
             cout << "Please enter land index of which you want to destroy." << endl;
             cin >> selectionIndex;
 
@@ -724,13 +743,24 @@ public:
             //target Creature
             for (int i = 0; i < targetPlayer->returnCard(2).size(); i++)
             {
-                if (targetPlayer->returnCard(2)[i]->getType() == "Creature" && targetPlayer->returnCard(2)[i]->getStatus() == false) {
+                if (targetPlayer->returnCard(2)[i]->getType() == "Creature") {
                     cout << BOLDRED << "Index:" << i << " " << RESET;
                     targetPlayer->returnCard(2)[i]->printInfo();
                     cards.push_back(targetPlayer->returnCard(2)[i]);
                 }
             }
+
             int selectionIndex;
+            for (int i = 0; i < cards.size(); i++)
+            {
+                cout << endl;
+                cout << "index: " << i << " ";
+                cards[i]->printInfo();
+
+
+            }
+            cout << endl;
+
             cout << "Please enter creature index of which you want to destroy." << endl;
             cin >> selectionIndex;
             if (selectionIndex >= 0 && selectionIndex < cards.size()) {
@@ -777,6 +807,17 @@ public:
                 }
             }
             int damageIndex;
+
+            for (int i = 0; i < cards.size(); i++)
+            {
+                cout << endl;
+                cout << "index: " << i << " ";
+                cards[i]->printInfo();
+
+
+            }
+            cout << endl;
+
             cout << BOLDMAGENTA << "Please enter an index number of creature to deal 2 damage." << RESET << endl;
             cin >> damageIndex;
 
@@ -1053,6 +1094,15 @@ public: void use(shared_ptr<Card>& C) {
     if (cards.size() > 0)
     {
         int selectionIndex;
+        for (int i = 0; i < cards.size(); i++)
+        {
+            cout << endl;
+            cout << "index: " << i << " ";
+            cards[i]->printInfo();
+
+
+        }
+        cout << endl;
         cout << "Please enter creature index of which you want to add trample." << endl;
         cin >> selectionIndex;
 
@@ -1345,7 +1395,7 @@ public:
 
     void printInfo()
     {
-        cout << CYAN << name << YELLOW << " ATTACK: " << attackPower << " " << GREEN << "HP: " << hp << " " << CYAN <<"COSTS:" << manaCost << YELLOW << " MANA: " << GREEN << "COLOR: " << CYAN << color << " " << YELLOW << trample << GREEN << " " << first_strike << RESET;
+        cout << CYAN << name << YELLOW << " ATTACK: " << attackPower << " " << GREEN << "HP: " << hp << " " << CYAN << "COSTS:" << manaCost << YELLOW << " MANA: " << GREEN << "COLOR: " << CYAN << color << " " << YELLOW << trample << GREEN << " " << first_strike << RESET;
     }
 
     string getType()
@@ -1460,7 +1510,7 @@ public:
 
     void printInfo()
     {
-        cout << CYAN << name << " " << YELLOW << type << GREEN << " COST: " << manaCost << CYAN << " COLOR: " << color << YELLOW << " TEXT: " << enchantmentText <<RESET;
+        cout << CYAN << name << " " << YELLOW << type << GREEN << " COST: " << manaCost << CYAN << " COLOR: " << color << YELLOW << " TEXT: " << enchantmentText << RESET;
     }
 
     void useEffect(shared_ptr<Card> c) {
@@ -1603,7 +1653,7 @@ void combat(shared_ptr<Card>& attackingCreature, shared_ptr<Player>& attakingPla
     }
     else if (defendingCreature->getHasFirstStrike() == true && attackingCreature->getHasFirstStrike() == false)
     {
-       // cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) doesnt have it." << endl;
+        // cout << defendingCreature->getName() << "(defending) creature has first strike and " << attackingCreature->getName() << "(attacking) doesnt have it." << endl;
         attackingCreature->setHp(attackingCreature->getHp() - defendingCreature->getAttackPower());
 
         if (attackingCreature->isDead())
@@ -1662,7 +1712,7 @@ void combat(shared_ptr<Card>& attackingCreature, shared_ptr<Player>& attakingPla
     }
 
     else {
-       
+
 
 
         defendingCreature->setHp(defendingCreature->getHp() - attackingCreature->getAttackPower());
@@ -1708,7 +1758,7 @@ void turnLoop() {
 
     shared_ptr<Player> targetPlayer;
 
-    if (p1->getHp() <= 0 )
+    if (p1->getHp() <= 0)
     {
         cout << GREEN << "PLAYER 2 HAS WON WITH " << p2->getHp() << " HP LEFT." << RESET << endl;
         isGameFinished = true;
@@ -1734,7 +1784,7 @@ void turnLoop() {
         //p2->printHand();
     }
 
-  
+
 
     if (turn == 0) {
         targetPlayer = p2;
@@ -1768,13 +1818,13 @@ void turnLoop() {
 
         ourPlayer->setHp(0);
 
-        if (p1->getHp() <= 0 )
+        if (p1->getHp() <= 0)
         {
             cout << GREEN << "PLAYER 2 HAS WON WITH " << p2->getHp() << " HP LEFT." << RESET << endl;
         }
         else if (p2->getHp() <= 0)
         {
-            cout << GREEN << "PLAYER 1 HAS WON WITH " << p1->getHp() << " HP LEFT." << RESET <<endl;
+            cout << GREEN << "PLAYER 1 HAS WON WITH " << p1->getHp() << " HP LEFT." << RESET << endl;
         }
     }
 
@@ -1790,10 +1840,11 @@ void turnLoop() {
     ourPlayer->printInplay();
     targetPlayer->printInplay();
 
-    if(turn==0){
+    if (turn == 0) {
         ourPlayer->getHealthInfo();
         targetPlayer->getHealthInfo();
-    } else {
+    }
+    else {
         targetPlayer->getHealthInfo();
         ourPlayer->getHealthInfo();
     }
@@ -1878,8 +1929,8 @@ void turnLoop() {
         while ((s >= 0 && s < ourCards.size()) || s == -1) {
             for (int j = 0; j < ourCards.size(); j++) {
                 cout << BOLDRED << "Index:" << j << " " << RESET;
-                    ourCards[j]->printInfo();
-                cout<< " " << endl;
+                ourCards[j]->printInfo();
+                cout << " " << endl;
             }
 
             cout << BOLDMAGENTA << "Please enter an index number for a creature." << RESET << endl;
@@ -1935,18 +1986,18 @@ void turnLoop() {
             if (i < usedDefendCards.size()) {
                 combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
 
-                
+
             }
             else {
                 combatNoDefendingPlayer(usedAttackCards[i], ourPlayer, targetPlayer);
-              
+
             }
         }
     }
     else if (usedAttackCards.size() == usedDefendCards.size()) {
         for (int i = 0; i < usedAttackCards.size(); i++) {
             combat(usedAttackCards[i], ourPlayer, usedDefendCards[i], targetPlayer);
-          
+
         }
     }
 
@@ -2125,7 +2176,7 @@ void playGame() {
     while (!isGameFinished) {
         turnLoop();
         turn = (turn == 0) ? turn = 1 : turn = 0;
-        if(turn==0){
+        if (turn == 0) {
             roundCounter++;
         }
     }
